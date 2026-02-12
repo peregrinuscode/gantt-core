@@ -1,0 +1,121 @@
+/* ============================================================
+   @peregrinus/gantt-core — Base Styles
+   ============================================================
+   All visual customization is via CSS custom properties.
+   Consumers override by setting variables on a parent element
+   or passing a `theme` prop to GanttChart.
+   ============================================================ */
+
+.gantt-core {
+  /* Defaults */
+  --gantt-bg: #ffffff;
+  --gantt-grid-line: #e8e8e8;
+  --gantt-today: #ff4444;
+  --gantt-weekend-bg: #f9f9f9;
+  --gantt-header-bg: #fafafa;
+  --gantt-header-text: #333333;
+  --gantt-bar-text: #ffffff;
+  --gantt-bar-radius: 4px;
+  --gantt-bar-height: 0.7;
+  --gantt-arrow-color: #999999;
+  --gantt-row-hover: rgba(0, 0, 0, 0.03);
+  --gantt-row-selected: rgba(25, 118, 210, 0.08);
+  --gantt-font: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --gantt-font-size: 13px;
+
+  /* Scoped reset */
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  font-family: var(--gantt-font);
+  font-size: var(--gantt-font-size);
+  background: var(--gantt-bg);
+  overflow: hidden;
+  position: relative;
+}
+
+/* ---- Header ---- */
+
+.gantt-header {
+  display: flex;
+  background: var(--gantt-header-bg);
+  border-bottom: 1px solid var(--gantt-grid-line);
+  overflow: hidden;
+  user-select: none;
+}
+
+.gantt-header-cell {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gantt-header-text);
+  font-size: 12px;
+  font-weight: 500;
+  border-right: 1px solid var(--gantt-grid-line);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 4px;
+}
+
+/* ---- Timeline container ---- */
+
+.gantt-timeline-container {
+  overflow: auto;
+  position: relative;
+}
+
+/* ---- SVG layers ---- */
+
+.gantt-grid-line {
+  stroke: var(--gantt-grid-line);
+  stroke-width: 1;
+}
+
+.gantt-weekend-rect {
+  fill: var(--gantt-weekend-bg);
+}
+
+.gantt-today-line {
+  stroke: var(--gantt-today);
+  stroke-width: 2;
+  stroke-dasharray: 6 4;
+}
+
+/* ---- Task bars ---- */
+
+.gantt-bar-group {
+  cursor: pointer;
+}
+
+.gantt-bar-group:hover .gantt-bar-bg {
+  filter: brightness(1.08);
+}
+
+.gantt-bar-bg {
+  transition: filter 0.15s ease;
+}
+
+.gantt-bar-progress {
+  pointer-events: none;
+}
+
+.gantt-bar-label {
+  fill: var(--gantt-bar-text);
+  font-family: var(--gantt-font);
+  font-size: 12px;
+  font-weight: 500;
+  pointer-events: none;
+  dominant-baseline: central;
+  text-anchor: middle;
+}
+
+/* ---- Group header rows ---- */
+
+.gantt-group-row {
+  fill: var(--gantt-header-bg);
+}

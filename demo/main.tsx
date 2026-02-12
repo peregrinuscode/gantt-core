@@ -51,6 +51,7 @@ function App() {
         groups={groups}
         viewMode="week"
         onTaskClick={(id) => console.log('Task clicked:', id)}
+        onTaskDoubleClick={(id) => console.log('Task double-clicked:', id)}
         onTaskMove={(e) => console.log('Task moved:', e)}
         onTaskResize={(e) => console.log('Task resized:', e)}
         onProgressChange={(e) => console.log('Progress changed:', e)}

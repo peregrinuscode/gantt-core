@@ -2,10 +2,13 @@
 // @peregrinus/gantt-core — Public API
 // ============================================================
 
-// Main component (placeholder — will be implemented in session 1)
+// Styles (consumers import '@peregrinus/gantt-core/styles.css')
+import './styles.css';
+
+// Main component
 export { GanttChart } from './components/GanttChart';
 
-// Types
+// Types — core
 export type {
   GanttTask,
   GanttGroup,
@@ -16,3 +19,13 @@ export type {
   ProgressChangeEvent,
   DependencyCreateEvent,
 } from './types';
+
+// Types — layout (useful for advanced consumers)
+export type {
+  GanttRow,
+  GanttBar,
+  GanttLayoutResult,
+} from './hooks/useGanttLayout';
+
+// Types — date utilities
+export type { TimeRange, DateColumn } from './utils/dateUtils';
