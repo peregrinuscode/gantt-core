@@ -50,6 +50,7 @@ function App() {
         tasks={tasks}
         groups={groups}
         viewMode="week"
+        taskListWidth={250}
         onTaskClick={(id) => console.log('Task clicked:', id)}
         onTaskDoubleClick={(id) => console.log('Task double-clicked:', id)}
         onTaskMove={(e) => console.log('Task moved:', e)}

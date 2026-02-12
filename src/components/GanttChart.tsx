@@ -1,9 +1,11 @@
-import { useCallback, useRef, useState } from 'react';
 import type { GanttChartProps, ViewMode } from '../types';
 import { useGanttLayout } from '../hooks/useGanttLayout';
+import { useGanttTree } from '../hooks/useGanttTree';
+import { useGanttScroll } from '../hooks/useGanttScroll';
 import { dateToX } from '../utils/dateUtils';
 import { GanttHeader } from './GanttHeader';
 import { GanttTaskBar } from './GanttTaskBar';
+import { GanttTaskList } from './GanttTaskList';
 
 /** Default column widths per view mode */
 const DEFAULT_COLUMN_WIDTH: Record<ViewMode, number> = {
@@ -20,6 +22,7 @@ export function GanttChart(props: GanttChartProps) {
     tasks,
     groups = [],
     viewMode = 'week',
+    taskListWidth = 0,
     rowHeight = DEFAULT_ROW_HEIGHT,
     columnWidth: columnWidthProp,
     showTodayMarker = true,
@@ -31,26 +34,23 @@ export function GanttChart(props: GanttChartProps) {
 
   const columnWidth = columnWidthProp ?? DEFAULT_COLUMN_WIDTH[viewMode];
 
+  // Expand/collapse state
+  const { collapsedIds, toggleCollapse } = useGanttTree();
+
+  // Scroll synchronization
+  const { containerRef, scrollLeft, handleScroll } = useGanttScroll();
+
   const layout = useGanttLayout(
     tasks,
     groups,
     viewMode,
     rowHeight,
     columnWidth,
+    collapsedIds,
     locale,
   );
 
   const { rows, bars, columns, timeRange, totalWidth, totalHeight } = layout;
-
-  // Track horizontal scroll for syncing the header
-  const [scrollLeft, setScrollLeft] = useState(0);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  const handleScroll = useCallback(() => {
-    if (containerRef.current) {
-      setScrollLeft(containerRef.current.scrollLeft);
-    }
-  }, []);
 
   // Today marker x-position
   const today = new Date();
@@ -75,95 +75,115 @@ export function GanttChart(props: GanttChartProps) {
         columnWidth={columnWidth}
         height={HEADER_HEIGHT}
         scrollLeft={scrollLeft}
+        taskListWidth={taskListWidth}
       />
 
-      {/* Scrollable timeline area */}
-      <div
-        ref={containerRef}
-        className="gantt-timeline-container"
-        onScroll={handleScroll}
-      >
-        <svg width={totalWidth} height={totalHeight}>
-          {/* Grid layer: weekend backgrounds + vertical lines */}
-          <g className="gantt-grid-layer">
-            {/* Weekend column backgrounds */}
-            {columns
-              .filter((col) => col.isWeekend)
-              .map((col) => (
-                <rect
-                  key={`weekend-${col.index}`}
-                  className="gantt-weekend-rect"
-                  x={col.x}
-                  y={0}
-                  width={columnWidth}
-                  height={totalHeight}
-                />
-              ))}
+      {/* Body: task list + scrollable timeline */}
+      <div className="gantt-body">
+        {/* Scrollable container (task list is sticky inside it) */}
+        <div
+          ref={containerRef}
+          className="gantt-timeline-container"
+          onScroll={handleScroll}
+        >
+          {/* Task list panel (sticky left) */}
+          <div className="gantt-body-inner" style={{ width: taskListWidth + totalWidth }}>
+            <GanttTaskList
+              rows={rows}
+              width={taskListWidth}
+              rowHeight={rowHeight}
+              totalHeight={totalHeight}
+              onToggleCollapse={toggleCollapse}
+            />
 
-            {/* Vertical grid lines */}
-            {columns.map((col) => (
-              <line
-                key={`line-${col.index}`}
-                className="gantt-grid-line"
-                x1={col.x}
-                y1={0}
-                x2={col.x}
-                y2={totalHeight}
-              />
-            ))}
+            {/* SVG timeline */}
+            <svg
+              className="gantt-svg"
+              width={totalWidth}
+              height={totalHeight}
+            >
+              {/* Grid layer: weekend backgrounds + vertical lines */}
+              <g className="gantt-grid-layer">
+                {/* Weekend column backgrounds */}
+                {columns
+                  .filter((col) => col.isWeekend)
+                  .map((col) => (
+                    <rect
+                      key={`weekend-${col.index}`}
+                      className="gantt-weekend-rect"
+                      x={col.x}
+                      y={0}
+                      width={columnWidth}
+                      height={totalHeight}
+                    />
+                  ))}
 
-            {/* Horizontal row separators */}
-            {rows.map((row) => (
-              <line
-                key={`hline-${row.id}`}
-                className="gantt-grid-line"
-                x1={0}
-                y1={row.y + row.height}
-                x2={totalWidth}
-                y2={row.y + row.height}
-              />
-            ))}
+                {/* Vertical grid lines */}
+                {columns.map((col) => (
+                  <line
+                    key={`line-${col.index}`}
+                    className="gantt-grid-line"
+                    x1={col.x}
+                    y1={0}
+                    x2={col.x}
+                    y2={totalHeight}
+                  />
+                ))}
 
-            {/* Group row backgrounds */}
-            {rows
-              .filter((r) => r.type === 'group')
-              .map((row) => (
-                <rect
-                  key={`group-bg-${row.id}`}
-                  className="gantt-group-row"
-                  x={0}
-                  y={row.y}
-                  width={totalWidth}
-                  height={row.height}
-                />
-              ))}
-          </g>
+                {/* Horizontal row separators */}
+                {rows.map((row) => (
+                  <line
+                    key={`hline-${row.id}`}
+                    className="gantt-grid-line"
+                    x1={0}
+                    y1={row.y + row.height}
+                    x2={totalWidth}
+                    y2={row.y + row.height}
+                  />
+                ))}
 
-          {/* Bars layer */}
-          <g className="gantt-bars-layer">
-            {bars.map((bar) => (
-              <GanttTaskBar
-                key={bar.taskId}
-                bar={bar}
-                onClick={onTaskClick}
-                onDoubleClick={onTaskDoubleClick}
-              />
-            ))}
-          </g>
+                {/* Group row backgrounds */}
+                {rows
+                  .filter((r) => r.type === 'group')
+                  .map((row) => (
+                    <rect
+                      key={`group-bg-${row.id}`}
+                      className="gantt-group-row"
+                      x={0}
+                      y={row.y}
+                      width={totalWidth}
+                      height={row.height}
+                    />
+                  ))}
+              </g>
 
-          {/* Today marker */}
-          {showToday && (
-            <g className="gantt-today-layer">
-              <line
-                className="gantt-today-line"
-                x1={todayX}
-                y1={0}
-                x2={todayX}
-                y2={totalHeight}
-              />
-            </g>
-          )}
-        </svg>
+              {/* Bars layer */}
+              <g className="gantt-bars-layer">
+                {bars.map((bar) => (
+                  <GanttTaskBar
+                    key={bar.taskId}
+                    bar={bar}
+                    onClick={onTaskClick}
+                    onDoubleClick={onTaskDoubleClick}
+                  />
+                ))}
+              </g>
+
+              {/* Today marker */}
+              {showToday && (
+                <g className="gantt-today-layer">
+                  <line
+                    className="gantt-today-line"
+                    x1={todayX}
+                    y1={0}
+                    x2={todayX}
+                    y2={totalHeight}
+                  />
+                </g>
+              )}
+            </svg>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -22,6 +22,14 @@ export interface GanttRow {
   taskId?: string;
   /** Indentation level: 0=group, 1=top-level task, 2+=child */
   level: number;
+  /** Display name for the task list panel */
+  name: string;
+  /** Color (group color or task override) */
+  color?: string;
+  /** Whether this row has child rows (children tasks or group with tasks) */
+  hasChildren: boolean;
+  /** Whether this row is currently collapsed */
+  isCollapsed: boolean;
 }
 
 /** A positioned task bar ready for SVG rendering */
@@ -63,6 +71,7 @@ export function useGanttLayout(
   viewMode: ViewMode,
   rowHeight: number,
   columnWidth: number,
+  collapsedIds: Set<string>,
   locale?: string,
 ): GanttLayoutResult {
   return useMemo(() => {
@@ -109,6 +118,9 @@ export function useGanttLayout(
 
       for (const task of sorted) {
         const y = rows.length * rowHeight;
+        const children = childrenMap.get(task.id);
+        const hasChildren = !!children && children.length > 0;
+        const isCollapsed = collapsedIds.has(task.id);
 
         rows.push({
           type: 'task',
@@ -118,6 +130,10 @@ export function useGanttLayout(
           groupId,
           taskId: task.id,
           level,
+          name: task.name,
+          color: task.color ?? groupColorMap.get(groupId),
+          hasChildren,
+          isCollapsed,
         });
 
         // Calculate bar position
@@ -139,9 +155,8 @@ export function useGanttLayout(
           name: task.name,
         });
 
-        // Add children recursively
-        const children = childrenMap.get(task.id);
-        if (children) {
+        // Add children recursively (only if not collapsed)
+        if (children && !isCollapsed) {
           addTaskRows(children, groupId, level + 1);
         }
       }
@@ -149,6 +164,13 @@ export function useGanttLayout(
 
     if (sortedGroups.length > 0) {
       for (const group of sortedGroups) {
+        // Check if group has any tasks
+        const topLevel = tasks.filter(
+          (t) => t.groupId === group.id && !t.parentId,
+        );
+        const hasChildren = topLevel.length > 0;
+        const isCollapsed = collapsedIds.has(group.id);
+
         // Group header row
         const y = rows.length * rowHeight;
         rows.push({
@@ -158,13 +180,16 @@ export function useGanttLayout(
           height: rowHeight,
           groupId: group.id,
           level: 0,
+          name: group.name,
+          color: group.color,
+          hasChildren,
+          isCollapsed,
         });
 
-        // Top-level tasks in this group (no parentId)
-        const topLevel = tasks.filter(
-          (t) => t.groupId === group.id && !t.parentId,
-        );
-        addTaskRows(topLevel, group.id, 1);
+        // Top-level tasks in this group (skip if group is collapsed)
+        if (!isCollapsed) {
+          addTaskRows(topLevel, group.id, 1);
+        }
       }
     } else {
       // No groups — just add all top-level tasks
@@ -179,5 +204,5 @@ export function useGanttLayout(
     const totalHeight = rows.length * rowHeight;
 
     return { rows, bars, columns, timeRange, totalWidth, totalHeight };
-  }, [tasks, groups, viewMode, rowHeight, columnWidth, locale]);
+  }, [tasks, groups, viewMode, rowHeight, columnWidth, collapsedIds, locale]);
 }

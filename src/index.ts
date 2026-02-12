@@ -8,6 +8,10 @@ import './styles.css';
 // Main component
 export { GanttChart } from './components/GanttChart';
 
+// Hooks
+export { useGanttTree } from './hooks/useGanttTree';
+export type { UseGanttTreeResult } from './hooks/useGanttTree';
+
 // Types — core
 export type {
   GanttTask,
