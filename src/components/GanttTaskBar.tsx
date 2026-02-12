@@ -39,7 +39,7 @@ export function GanttTaskBar({
   const radius = 4;
   const effectiveProgress = progressOverride ?? bar.progress;
   const progressWidth = bar.width * (effectiveProgress / 100);
-  const interactive = !readOnly && !disabled;
+  const interactive = !readOnly && !disabled && !bar.isSummary;
 
   const handleClick = (e: React.MouseEvent) => {
     if (didDrag) {
@@ -59,6 +59,7 @@ export function GanttTaskBar({
     'gantt-bar-group',
     interactive && 'gantt-bar-group--interactive',
     disabled && 'gantt-bar-group--disabled',
+    bar.isSummary && 'gantt-bar-group--summary',
   ]
     .filter(Boolean)
     .join(' ');

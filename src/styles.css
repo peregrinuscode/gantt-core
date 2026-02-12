@@ -228,6 +228,19 @@
   fill: var(--gantt-arrow-color);
 }
 
+/* ---- Summary bars (collapsed groups) ---- */
+
+.gantt-bar-group--summary {
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+.gantt-bar-group--summary .gantt-bar-bg {
+  stroke: currentColor;
+  stroke-width: 1;
+  stroke-dasharray: 4 2;
+}
+
 /* ---- Drag interactions ---- */
 
 /* Interactive bars get grab cursor */

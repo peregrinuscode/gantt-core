@@ -60,6 +60,16 @@ export function GanttChart(props: GanttChartProps) {
 
   const { rows, bars, columns, timeRange, totalWidth, totalHeight } = layout;
 
+  // Handle clicks on task bars — summary bars expand their group
+  const handleBarClick = (taskId: string) => {
+    if (taskId.startsWith('group-summary-')) {
+      const groupId = taskId.replace('group-summary-', '');
+      toggleCollapse(groupId);
+    } else {
+      onTaskClick?.(taskId);
+    }
+  };
+
   // SVG element ref — needed for coordinate conversion in drag
   const svgRef = useRef<SVGSVGElement | null>(null);
 
@@ -227,7 +237,7 @@ export function GanttChart(props: GanttChartProps) {
                           ? drag.dragState!.ghostProgress
                           : undefined
                       }
-                      onClick={onTaskClick}
+                      onClick={handleBarClick}
                       onDoubleClick={onTaskDoubleClick}
                       onMoveStart={drag.handleMoveStart}
                       onResizeLeftStart={drag.handleResizeLeftStart}

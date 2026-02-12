@@ -7,6 +7,7 @@ import {
   type TimeRange,
   type DateColumn,
 } from '../utils/dateUtils';
+import { hexToRgba } from '../utils/colors';
 
 /** A single visible row (group header or task) */
 export interface GanttRow {
@@ -43,6 +44,8 @@ export interface GanttBar {
   progress: number;
   /** Task name for display on the bar */
   name: string;
+  /** True for group summary bars (collapsed groups) — not interactive */
+  isSummary?: boolean;
 }
 
 /** Complete layout result from useGanttLayout */
@@ -189,6 +192,31 @@ export function useGanttLayout(
         // Top-level tasks in this group (skip if group is collapsed)
         if (!isCollapsed) {
           addTaskRows(topLevel, group.id, 1);
+        } else if (hasChildren) {
+          // Generate a summary bar spanning all tasks in this group
+          const groupTasks = tasks.filter((t) => t.groupId === group.id);
+          let minStart = groupTasks[0].start;
+          let maxEnd = groupTasks[0].end;
+          for (const t of groupTasks) {
+            if (t.start < minStart) minStart = t.start;
+            if (t.end > maxEnd) maxEnd = t.end;
+          }
+
+          const sx = dateToX(minStart, timeRange, columnWidth, viewMode);
+          const sxEnd = dateToX(maxEnd, timeRange, columnWidth, viewMode);
+          const sWidth = Math.max(sxEnd - sx, 2);
+
+          bars.push({
+            taskId: `group-summary-${group.id}`,
+            x: sx,
+            y: y + (rowHeight - barHeight) / 2,
+            width: sWidth,
+            height: barHeight,
+            color: hexToRgba(group.color, 0.5),
+            progress: 0,
+            name: group.name,
+            isSummary: true,
+          });
         }
       }
     } else {
