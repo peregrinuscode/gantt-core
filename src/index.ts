@@ -36,3 +36,10 @@ export type {
 
 // Types — date utilities
 export type { TimeRange, DateColumn } from './utils/dateUtils';
+
+// Utilities — colors
+export { darkenHex, lightenHex, hexToRgba } from './utils/colors';
+
+// Utilities — arrow paths (for advanced consumers)
+export { computeArrowPath } from './utils/arrowPath';
+export type { ArrowEndpoints, ArrowPathResult } from './utils/arrowPath';

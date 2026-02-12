@@ -87,6 +87,8 @@ export interface GanttTheme {
   '--gantt-bar-radius'?: string;
   /** Task bar height as fraction of row height (0-1) */
   '--gantt-bar-height'?: string;
+  /** Progress overlay fill on task bars */
+  '--gantt-bar-progress-fill'?: string;
   /** Dependency arrow color */
   '--gantt-arrow-color'?: string;
   /** Row hover background */

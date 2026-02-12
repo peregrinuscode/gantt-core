@@ -8,6 +8,7 @@ import { dateToX } from '../utils/dateUtils';
 import { GanttHeader } from './GanttHeader';
 import { GanttTaskBar } from './GanttTaskBar';
 import { GanttTaskList } from './GanttTaskList';
+import { GanttDependencies } from './GanttDependencies';
 
 /** Default column widths per view mode */
 const DEFAULT_COLUMN_WIDTH: Record<ViewMode, number> = {
@@ -28,6 +29,7 @@ export function GanttChart(props: GanttChartProps) {
     rowHeight = DEFAULT_ROW_HEIGHT,
     columnWidth: columnWidthProp,
     readOnly = false,
+    showDependencies = true,
     showTodayMarker = true,
     theme,
     locale,
@@ -195,6 +197,15 @@ export function GanttChart(props: GanttChartProps) {
                     />
                   ))}
               </g>
+
+              {/* Dependency arrows layer (behind bars) */}
+              {showDependencies && (
+                <GanttDependencies
+                  tasks={tasks}
+                  bars={bars}
+                  rowHeight={rowHeight}
+                />
+              )}
 
               {/* Bars layer */}
               <g className="gantt-bars-layer">

@@ -98,7 +98,7 @@ export function GanttTaskBar({
           height={bar.height}
           rx={radius}
           ry={radius}
-          fill="rgba(0, 0, 0, 0.2)"
+          fill="var(--gantt-bar-progress-fill)"
           clipPath={`inset(0 ${bar.width - progressWidth}px 0 0)`}
         />
       )}
