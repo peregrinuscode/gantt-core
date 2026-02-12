@@ -1,7 +1,9 @@
-import type { GanttChartProps, ViewMode } from '../types';
+import { useMemo, useRef } from 'react';
+import type { GanttChartProps, GanttTask, ViewMode } from '../types';
 import { useGanttLayout } from '../hooks/useGanttLayout';
 import { useGanttTree } from '../hooks/useGanttTree';
 import { useGanttScroll } from '../hooks/useGanttScroll';
+import { useGanttDrag } from '../hooks/useGanttDrag';
 import { dateToX } from '../utils/dateUtils';
 import { GanttHeader } from './GanttHeader';
 import { GanttTaskBar } from './GanttTaskBar';
@@ -25,11 +27,15 @@ export function GanttChart(props: GanttChartProps) {
     taskListWidth = 0,
     rowHeight = DEFAULT_ROW_HEIGHT,
     columnWidth: columnWidthProp,
+    readOnly = false,
     showTodayMarker = true,
     theme,
     locale,
     onTaskClick,
     onTaskDoubleClick,
+    onTaskMove,
+    onTaskResize,
+    onProgressChange,
   } = props;
 
   const columnWidth = columnWidthProp ?? DEFAULT_COLUMN_WIDTH[viewMode];
@@ -52,6 +58,29 @@ export function GanttChart(props: GanttChartProps) {
 
   const { rows, bars, columns, timeRange, totalWidth, totalHeight } = layout;
 
+  // SVG element ref — needed for coordinate conversion in drag
+  const svgRef = useRef<SVGSVGElement | null>(null);
+
+  // Build disabled task IDs set
+  const disabledTaskIds = useMemo(
+    () => new Set(tasks.filter((t: GanttTask) => t.disabled).map((t: GanttTask) => t.id)),
+    [tasks],
+  );
+
+  // Drag interactions
+  const drag = useGanttDrag({
+    svgRef,
+    bars,
+    timeRange,
+    columnWidth,
+    viewMode,
+    readOnly,
+    disabledTaskIds,
+    onTaskMove,
+    onTaskResize,
+    onProgressChange,
+  });
+
   // Today marker x-position
   const today = new Date();
   const todayX = dateToX(today, timeRange, columnWidth, viewMode);
@@ -67,8 +96,15 @@ export function GanttChart(props: GanttChartProps) {
       ) as React.CSSProperties)
     : {};
 
+  const rootClassName = [
+    'gantt-core',
+    drag.isDragging && 'gantt-core--dragging',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
   return (
-    <div className="gantt-core" style={themeStyle}>
+    <div className={rootClassName} style={themeStyle}>
       {/* Date header */}
       <GanttHeader
         columns={columns}
@@ -98,9 +134,12 @@ export function GanttChart(props: GanttChartProps) {
 
             {/* SVG timeline */}
             <svg
-              className="gantt-svg"
+              ref={svgRef}
+              className={`gantt-svg${!readOnly ? ' gantt-svg--interactive' : ''}`}
               width={totalWidth}
               height={totalHeight}
+              onPointerMove={drag.handlePointerMove}
+              onPointerUp={drag.handlePointerUp}
             >
               {/* Grid layer: weekend backgrounds + vertical lines */}
               <g className="gantt-grid-layer">
@@ -159,15 +198,52 @@ export function GanttChart(props: GanttChartProps) {
 
               {/* Bars layer */}
               <g className="gantt-bars-layer">
-                {bars.map((bar) => (
-                  <GanttTaskBar
-                    key={bar.taskId}
-                    bar={bar}
-                    onClick={onTaskClick}
-                    onDoubleClick={onTaskDoubleClick}
-                  />
-                ))}
+                {bars.map((bar) => {
+                  // During a progress drag, pass the live ghost progress
+                  // directly to the bar so its overlay and handle update in place
+                  const isProgressDragging =
+                    drag.dragState?.mode === 'progress' &&
+                    drag.dragState.taskId === bar.taskId;
+
+                  return (
+                    <GanttTaskBar
+                      key={bar.taskId}
+                      bar={bar}
+                      readOnly={readOnly}
+                      disabled={disabledTaskIds.has(bar.taskId)}
+                      progressOverride={
+                        isProgressDragging
+                          ? drag.dragState!.ghostProgress
+                          : undefined
+                      }
+                      onClick={onTaskClick}
+                      onDoubleClick={onTaskDoubleClick}
+                      onMoveStart={drag.handleMoveStart}
+                      onResizeLeftStart={drag.handleResizeLeftStart}
+                      onResizeRightStart={drag.handleResizeRightStart}
+                      onProgressStart={drag.handleProgressStart}
+                      didDrag={drag.didDrag}
+                      clearDidDrag={drag.clearDidDrag}
+                    />
+                  );
+                })}
               </g>
+
+              {/* Ghost preview layer (rendered during move/resize drag — not progress) */}
+              {drag.dragState && drag.dragState.mode !== 'progress' && (
+                <g className="gantt-ghost-layer">
+                  <rect
+                    className="gantt-bar-ghost"
+                    x={drag.dragState.ghostBar.x}
+                    y={drag.dragState.ghostBar.y}
+                    width={drag.dragState.ghostBar.width}
+                    height={drag.dragState.ghostBar.height}
+                    rx={4}
+                    ry={4}
+                    fill={drag.dragState.ghostBar.color}
+                  />
+                </g>
+              )}
 
               {/* Today marker */}
               {showToday && (

@@ -12,6 +12,9 @@ export { GanttChart } from './components/GanttChart';
 export { useGanttTree } from './hooks/useGanttTree';
 export type { UseGanttTreeResult } from './hooks/useGanttTree';
 
+// Types — drag (for advanced consumers)
+export type { DragMode, DragState } from './hooks/useGanttDrag';
+
 // Types — core
 export type {
   GanttTask,

@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import { GanttChart } from '@peregrinus/gantt-core';
-import type { GanttTask, GanttGroup } from '@peregrinus/gantt-core';
+import type { GanttTask, GanttGroup, TaskChangeEvent, ProgressChangeEvent } from '@peregrinus/gantt-core';
 
 // --- Mock data simulating a construction project ---
 
@@ -18,7 +18,7 @@ const d = (offset: number): Date => {
   return date;
 };
 
-const tasks: GanttTask[] = [
+const initialTasks: GanttTask[] = [
   // Structural
   { id: 's1', name: 'Cimentación', start: d(-10), end: d(5), progress: 80, groupId: 'structural', sortOrder: 1 },
   { id: 's2', name: 'Columnas planta baja', start: d(5), end: d(20), progress: 30, groupId: 'structural', dependencies: ['s1'], sortOrder: 2 },
@@ -32,31 +32,78 @@ const tasks: GanttTask[] = [
 
   // Finishes
   { id: 'f1', name: 'Aplanados muros', start: d(25), end: d(40), progress: 0, groupId: 'finishes', dependencies: ['s3'], sortOrder: 1 },
-  { id: 'f2', name: 'Piso cerámico', start: d(35), end: d(50), progress: 0, groupId: 'finishes', dependencies: ['f1'], sortOrder: 2 },
+  { id: 'f2', name: 'Piso cerámico', start: d(35), end: d(50), progress: 0, groupId: 'finishes', dependencies: ['f1'], sortOrder: 2, disabled: true },
   { id: 'f3', name: 'Pintura', start: d(45), end: d(55), progress: 0, groupId: 'finishes', dependencies: ['f1'], sortOrder: 3 },
 ];
 
 function App() {
+  const [tasks, setTasks] = useState<GanttTask[]>(initialTasks);
+  const [readOnly, setReadOnly] = useState(false);
+
+  const handleTaskMove = (event: TaskChangeEvent) => {
+    console.log('Task moved:', event);
+    setTasks((prev) =>
+      prev.map((t) =>
+        t.id === event.taskId
+          ? { ...t, start: event.start, end: event.end }
+          : t,
+      ),
+    );
+  };
+
+  const handleTaskResize = (event: TaskChangeEvent) => {
+    console.log('Task resized:', event);
+    setTasks((prev) =>
+      prev.map((t) =>
+        t.id === event.taskId
+          ? { ...t, start: event.start, end: event.end }
+          : t,
+      ),
+    );
+  };
+
+  const handleProgressChange = (event: ProgressChangeEvent) => {
+    console.log('Progress changed:', event);
+    setTasks((prev) =>
+      prev.map((t) =>
+        t.id === event.taskId
+          ? { ...t, progress: event.progress }
+          : t,
+      ),
+    );
+  };
+
   return (
     <div style={{ padding: 32, maxWidth: 1200, margin: '0 auto' }}>
       <h1 style={{ fontFamily: 'system-ui', marginBottom: 8 }}>
         @peregrinus/gantt-core — Demo
       </h1>
-      <p style={{ color: '#666', fontFamily: 'system-ui', marginBottom: 24 }}>
-        Construction project mock data. This page is for development testing only.
+      <p style={{ color: '#666', fontFamily: 'system-ui', marginBottom: 16 }}>
+        Construction project mock data. Drag bars to move, edges to resize, progress handle to update progress.
+        <br />
+        "Piso cerámico" is disabled (dimmed, not draggable).
       </p>
+
+      <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16, fontFamily: 'system-ui', cursor: 'pointer' }}>
+        <input
+          type="checkbox"
+          checked={readOnly}
+          onChange={(e) => setReadOnly(e.target.checked)}
+        />
+        Read-only mode
+      </label>
 
       <GanttChart
         tasks={tasks}
         groups={groups}
         viewMode="week"
         taskListWidth={250}
+        readOnly={readOnly}
         onTaskClick={(id) => console.log('Task clicked:', id)}
         onTaskDoubleClick={(id) => console.log('Task double-clicked:', id)}
-        onTaskMove={(e) => console.log('Task moved:', e)}
-        onTaskResize={(e) => console.log('Task resized:', e)}
-        onProgressChange={(e) => console.log('Progress changed:', e)}
-        onDependencyCreate={(e) => console.log('Dependency created:', e)}
+        onTaskMove={handleTaskMove}
+        onTaskResize={handleTaskResize}
+        onProgressChange={handleProgressChange}
       />
     </div>
   );

@@ -1,4 +1,4 @@
-# CLAUDE.md — @peregrinus/gantt-core
+saa# CLAUDE.md — @peregrinus/gantt-core
 
 ## What This Is
 

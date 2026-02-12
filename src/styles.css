@@ -214,3 +214,68 @@
 .gantt-group-row {
   fill: var(--gantt-header-bg);
 }
+
+/* ---- Drag interactions ---- */
+
+/* Interactive bars get grab cursor */
+.gantt-bar-group--interactive {
+  cursor: grab;
+}
+
+.gantt-bar-group--interactive:active {
+  cursor: grabbing;
+}
+
+/* Disabled bars are dimmed and not interactive */
+.gantt-bar-group--disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* Resize handles — invisible by default, subtle on hover */
+.gantt-bar-resize-handle {
+  fill: transparent;
+  cursor: ew-resize;
+  transition: fill 0.15s ease;
+}
+
+.gantt-bar-group:hover .gantt-bar-resize-handle {
+  fill: rgba(255, 255, 255, 0.25);
+}
+
+/* Progress handle — hidden until bar is hovered */
+.gantt-bar-progress-handle {
+  fill: #ffffff;
+  stroke: rgba(0, 0, 0, 0.4);
+  stroke-width: 1.5;
+  cursor: col-resize;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.gantt-bar-group:hover .gantt-bar-progress-handle {
+  opacity: 1;
+}
+
+/* Ghost preview during drag */
+.gantt-bar-ghost {
+  opacity: 0.5;
+  stroke: #333;
+  stroke-width: 1;
+  stroke-dasharray: 4 2;
+  pointer-events: none;
+}
+
+.gantt-bar-ghost-progress {
+  pointer-events: none;
+}
+
+/* Dragging state — disables text selection */
+.gantt-core--dragging {
+  user-select: none;
+}
+
+/* Interactive SVG — disables touch scrolling to allow drag */
+.gantt-svg--interactive {
+  touch-action: none;
+}
