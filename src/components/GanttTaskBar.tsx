@@ -5,8 +5,6 @@ interface GanttTaskBarProps {
   bar: GanttBar;
   readOnly?: boolean;
   disabled?: boolean;
-  /** Live progress override during drag (0-100). When set, the overlay and handle use this instead of bar.progress. */
-  progressOverride?: number;
   onClick?: (taskId: string) => void;
   onDoubleClick?: (taskId: string) => void;
   onMoveStart?: (taskId: string, e: React.PointerEvent) => void;
@@ -26,7 +24,6 @@ export function GanttTaskBar({
   bar,
   readOnly,
   disabled,
-  progressOverride,
   onClick,
   onDoubleClick,
   onMoveStart,
@@ -37,8 +34,7 @@ export function GanttTaskBar({
   clearDidDrag,
 }: GanttTaskBarProps) {
   const radius = 4;
-  const effectiveProgress = progressOverride ?? bar.progress;
-  const progressWidth = bar.width * (effectiveProgress / 100);
+  const progressWidth = bar.width * (bar.progress / 100);
   const interactive = !readOnly && !disabled && !bar.isSummary;
 
   const handleClick = (e: React.MouseEvent) => {
@@ -90,9 +86,10 @@ export function GanttTaskBar({
       {/* Progress overlay — full-width rect clipped to progressWidth.
            Using full width so left corners match the background bar's rounding,
            while the clipPath gives a clean straight edge on the right. */}
-      {effectiveProgress > 0 && (
+      {bar.progress > 0 && (
         <rect
           className="gantt-bar-progress"
+          data-progress-task={bar.taskId}
           x={bar.x}
           y={bar.y}
           width={bar.width}
@@ -151,6 +148,7 @@ export function GanttTaskBar({
           {/* Progress handle — circle at progress boundary */}
           <circle
             className="gantt-bar-progress-handle"
+            data-progress-handle={bar.taskId}
             cx={bar.x + progressWidth}
             cy={bar.y + bar.height / 2}
             r={PROGRESS_HANDLE_RADIUS}

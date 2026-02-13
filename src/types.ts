@@ -125,6 +125,8 @@ export interface GanttChartProps {
   theme?: GanttTheme;
   /** Locale for date formatting (e.g. 'es-MX', 'en-US') */
   locale?: string;
+  /** IDs of groups/tasks that should start collapsed */
+  initialCollapsed?: string[];
 
   // --- Events ---
 

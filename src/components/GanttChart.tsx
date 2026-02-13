@@ -33,6 +33,7 @@ export function GanttChart(props: GanttChartProps) {
     showTodayMarker = true,
     theme,
     locale,
+    initialCollapsed,
     onTaskClick,
     onTaskDoubleClick,
     onTaskMove,
@@ -43,7 +44,7 @@ export function GanttChart(props: GanttChartProps) {
   const columnWidth = columnWidthProp ?? DEFAULT_COLUMN_WIDTH[viewMode];
 
   // Expand/collapse state
-  const { collapsedIds, toggleCollapse } = useGanttTree();
+  const { collapsedIds, toggleCollapse } = useGanttTree(initialCollapsed);
 
   // Scroll synchronization
   const { containerRef, scrollLeft, handleScroll } = useGanttScroll();
@@ -72,6 +73,8 @@ export function GanttChart(props: GanttChartProps) {
 
   // SVG element ref — needed for coordinate conversion in drag
   const svgRef = useRef<SVGSVGElement | null>(null);
+  // Persistent ghost rect — positioned directly by drag hook (no React renders)
+  const ghostRectRef = useRef<SVGRectElement | null>(null);
 
   // Build disabled task IDs set
   const disabledTaskIds = useMemo(
@@ -82,6 +85,7 @@ export function GanttChart(props: GanttChartProps) {
   // Drag interactions
   const drag = useGanttDrag({
     svgRef,
+    ghostRectRef,
     bars,
     timeRange,
     columnWidth,
@@ -219,52 +223,34 @@ export function GanttChart(props: GanttChartProps) {
 
               {/* Bars layer */}
               <g className="gantt-bars-layer">
-                {bars.map((bar) => {
-                  // During a progress drag, pass the live ghost progress
-                  // directly to the bar so its overlay and handle update in place
-                  const isProgressDragging =
-                    drag.dragState?.mode === 'progress' &&
-                    drag.dragState.taskId === bar.taskId;
-
-                  return (
-                    <GanttTaskBar
-                      key={bar.taskId}
-                      bar={bar}
-                      readOnly={readOnly}
-                      disabled={disabledTaskIds.has(bar.taskId)}
-                      progressOverride={
-                        isProgressDragging
-                          ? drag.dragState!.ghostProgress
-                          : undefined
-                      }
-                      onClick={handleBarClick}
-                      onDoubleClick={onTaskDoubleClick}
-                      onMoveStart={drag.handleMoveStart}
-                      onResizeLeftStart={drag.handleResizeLeftStart}
-                      onResizeRightStart={drag.handleResizeRightStart}
-                      onProgressStart={drag.handleProgressStart}
-                      didDrag={drag.didDrag}
-                      clearDidDrag={drag.clearDidDrag}
-                    />
-                  );
-                })}
+                {bars.map((bar) => (
+                  <GanttTaskBar
+                    key={bar.taskId}
+                    bar={bar}
+                    readOnly={readOnly}
+                    disabled={disabledTaskIds.has(bar.taskId)}
+                    onClick={handleBarClick}
+                    onDoubleClick={onTaskDoubleClick}
+                    onMoveStart={drag.handleMoveStart}
+                    onResizeLeftStart={drag.handleResizeLeftStart}
+                    onResizeRightStart={drag.handleResizeRightStart}
+                    onProgressStart={drag.handleProgressStart}
+                    didDrag={drag.didDrag}
+                    clearDidDrag={drag.clearDidDrag}
+                  />
+                ))}
               </g>
 
-              {/* Ghost preview layer (rendered during move/resize drag — not progress) */}
-              {drag.dragState && drag.dragState.mode !== 'progress' && (
-                <g className="gantt-ghost-layer">
-                  <rect
-                    className="gantt-bar-ghost"
-                    x={drag.dragState.ghostBar.x}
-                    y={drag.dragState.ghostBar.y}
-                    width={drag.dragState.ghostBar.width}
-                    height={drag.dragState.ghostBar.height}
-                    rx={4}
-                    ry={4}
-                    fill={drag.dragState.ghostBar.color}
-                  />
-                </g>
-              )}
+              {/* Persistent ghost rect — positioned directly by drag hook via ref */}
+              <g className="gantt-ghost-layer">
+                <rect
+                  ref={ghostRectRef}
+                  className="gantt-bar-ghost"
+                  rx={4}
+                  ry={4}
+                  style={{ display: 'none' }}
+                />
+              </g>
 
               {/* Today marker */}
               {showToday && (

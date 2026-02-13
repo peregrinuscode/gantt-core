@@ -33,6 +33,8 @@ const MIN_BAR_WIDTH = 10; // minimum bar width in pixels
 interface UseGanttDragOptions {
   /** Ref to the SVG element — used for coordinate conversion */
   svgRef: RefObject<SVGSVGElement | null>;
+  /** Ref to the persistent ghost <rect> element — positioned directly during drag */
+  ghostRectRef: RefObject<SVGRectElement | null>;
   bars: GanttBar[];
   timeRange: TimeRange;
   columnWidth: number;
@@ -45,7 +47,7 @@ interface UseGanttDragOptions {
 }
 
 export interface UseGanttDragResult {
-  dragState: DragState | null;
+  /** True while a drag is active (toggles at start/end — only 2 renders per drag) */
   isDragging: boolean;
   /** Whether a drag occurred (used for click suppression) */
   didDrag: boolean;
@@ -64,6 +66,7 @@ export interface UseGanttDragResult {
 export function useGanttDrag(options: UseGanttDragOptions): UseGanttDragResult {
   const {
     svgRef,
+    ghostRectRef,
     bars,
     timeRange,
     columnWidth,
@@ -75,11 +78,13 @@ export function useGanttDrag(options: UseGanttDragOptions): UseGanttDragResult {
     onProgressChange,
   } = options;
 
-  const [dragState, setDragState] = useState<DragState | null>(null);
+  // Only boolean state — toggles at drag start/end (2 renders per drag cycle)
+  const [isDragging, setIsDragging] = useState(false);
+
+  // All mutable drag state lives in refs — no React re-renders during drag
+  const dragStateRef = useRef<DragState | null>(null);
   const trackerRef = useRef<DragTracker | null>(null);
   const didDragRef = useRef(false);
-  // Stores the final drag result so we can fire callbacks outside setState
-  const pendingResultRef = useRef<DragState | null>(null);
 
   const findBar = useCallback(
     (taskId: string) => bars.find((b) => b.taskId === taskId),
@@ -135,70 +140,109 @@ export function useGanttDrag(options: UseGanttDragOptions): UseGanttDragResult {
         tracker.activated = true;
         didDragRef.current = true;
 
-        // Initialize drag state
-        setDragState({
+        // Single React render to set isDragging (adds CSS class, cursor)
+        setIsDragging(true);
+
+        // Initialize drag state in ref (no render)
+        dragStateRef.current = {
           taskId,
           mode,
           originalBar,
           ghostBar: { ...originalBar },
           ghostProgress: originalBar.progress,
-        });
+        };
+
+        // Show ghost rect for move/resize modes
+        if (mode !== 'progress' && ghostRectRef.current) {
+          const g = ghostRectRef.current;
+          g.style.display = '';
+          g.setAttribute('x', String(originalBar.x));
+          g.setAttribute('y', String(originalBar.y));
+          g.setAttribute('width', String(originalBar.width));
+          g.setAttribute('height', String(originalBar.height));
+          g.setAttribute('fill', originalBar.color);
+        }
       }
 
-      // For progress mode, compute SVG x-coordinate from the live pointer position.
-      // Must be done synchronously before setDragState (event properties may go stale).
-      let progressValue: number | undefined;
-      if (mode === 'progress') {
-        const svgX = clientXToSvgX(e.clientX);
-        const pointerXInBar = svgX - originalBar.x;
-        const rawProgress = (pointerXInBar / originalBar.width) * 100;
-        progressValue = Math.round(Math.max(0, Math.min(100, rawProgress)));
-      }
+      const state = dragStateRef.current;
+      if (!state) return;
 
-      // Update ghost based on mode
-      setDragState((prev) => {
-        if (!prev) return null;
+      // Compute new ghost position based on drag mode
+      const ghost = { ...state.originalBar };
+      let ghostProgress = state.originalBar.progress;
 
-        const ghost = { ...prev.originalBar };
-        let ghostProgress = prev.originalBar.progress;
+      switch (mode) {
+        case 'move':
+          ghost.x = originalBar.x + deltaX;
+          break;
 
-        switch (mode) {
-          case 'move':
-            ghost.x = originalBar.x + deltaX;
-            break;
-
-          case 'resize-left': {
-            const newX = originalBar.x + deltaX;
-            const newWidth = originalBar.width - deltaX;
-            if (newWidth >= MIN_BAR_WIDTH) {
-              ghost.x = newX;
-              ghost.width = newWidth;
-            } else {
-              ghost.x = originalBar.x + originalBar.width - MIN_BAR_WIDTH;
-              ghost.width = MIN_BAR_WIDTH;
-            }
-            break;
+        case 'resize-left': {
+          const newX = originalBar.x + deltaX;
+          const newWidth = originalBar.width - deltaX;
+          if (newWidth >= MIN_BAR_WIDTH) {
+            ghost.x = newX;
+            ghost.width = newWidth;
+          } else {
+            ghost.x = originalBar.x + originalBar.width - MIN_BAR_WIDTH;
+            ghost.width = MIN_BAR_WIDTH;
           }
-
-          case 'resize-right': {
-            const newWidth = originalBar.width + deltaX;
-            ghost.width = Math.max(newWidth, MIN_BAR_WIDTH);
-            break;
-          }
-
-          case 'progress':
-            ghostProgress = progressValue!;
-            break;
+          break;
         }
 
-        return {
-          ...prev,
-          ghostBar: ghost,
-          ghostProgress,
-        };
-      });
+        case 'resize-right': {
+          const newWidth = originalBar.width + deltaX;
+          ghost.width = Math.max(newWidth, MIN_BAR_WIDTH);
+          break;
+        }
+
+        case 'progress': {
+          const svgX = clientXToSvgX(e.clientX);
+          const pointerXInBar = svgX - originalBar.x;
+          const rawProgress = (pointerXInBar / originalBar.width) * 100;
+          ghostProgress = Math.round(Math.max(0, Math.min(100, rawProgress)));
+          break;
+        }
+      }
+
+      // Update ref (no React render)
+      dragStateRef.current = { ...state, ghostBar: ghost, ghostProgress };
+
+      // ---- Direct DOM updates (bypass React for 60fps) ----
+
+      if (mode !== 'progress' && ghostRectRef.current) {
+        const g = ghostRectRef.current;
+        g.setAttribute('x', String(ghost.x));
+        g.setAttribute('y', String(ghost.y));
+        g.setAttribute('width', String(ghost.width));
+        g.setAttribute('height', String(ghost.height));
+      }
+
+      if (mode === 'progress' && svgRef.current) {
+        const progressRect = svgRef.current.querySelector(
+          `[data-progress-task="${taskId}"]`,
+        ) as SVGRectElement | null;
+        const progressHandle = svgRef.current.querySelector(
+          `[data-progress-handle="${taskId}"]`,
+        ) as SVGCircleElement | null;
+        const progressWidth = originalBar.width * (ghostProgress / 100);
+
+        if (progressRect) {
+          const clipRight = originalBar.width - progressWidth;
+          progressRect.setAttribute(
+            'clip-path',
+            `inset(0 ${clipRight}px 0 0)`,
+          );
+          progressRect.style.display = ghostProgress > 0 ? '' : 'none';
+        }
+        if (progressHandle) {
+          progressHandle.setAttribute(
+            'cx',
+            String(originalBar.x + progressWidth),
+          );
+        }
+      }
     },
-    [clientXToSvgX],
+    [clientXToSvgX, ghostRectRef, svgRef],
   );
 
   const handlePointerUp = useCallback(
@@ -211,25 +255,27 @@ export function useGanttDrag(options: UseGanttDragOptions): UseGanttDragResult {
 
       // If drag never activated, just clean up
       if (!tracker.activated) {
-        setDragState(null);
         return;
       }
 
-      // Read the final drag state, store it in a ref, then clear dragState.
-      // We fire callbacks AFTER clearing state to avoid "setState during render".
-      setDragState((prev) => {
-        pendingResultRef.current = prev;
-        return null;
-      });
+      // Read final drag state from ref
+      const result = dragStateRef.current;
+      dragStateRef.current = null;
 
-      // Fire callbacks outside the setState updater (deferred to next microtask)
+      // Hide ghost rect
+      if (ghostRectRef.current) {
+        ghostRectRef.current.style.display = 'none';
+      }
+
+      // Single React render to clear isDragging
+      setIsDragging(false);
+
+      if (!result) return;
+
+      const { mode, taskId, ghostBar, ghostProgress } = result;
+
+      // Fire callbacks outside the render cycle (deferred to next microtask)
       queueMicrotask(() => {
-        const result = pendingResultRef.current;
-        pendingResultRef.current = null;
-        if (!result) return;
-
-        const { mode, taskId, ghostBar, ghostProgress } = result;
-
         if (mode === 'progress') {
           onProgressChange?.({ taskId, progress: ghostProgress });
         } else {
@@ -250,7 +296,7 @@ export function useGanttDrag(options: UseGanttDragOptions): UseGanttDragResult {
         }
       });
     },
-    [timeRange, columnWidth, viewMode, onTaskMove, onTaskResize, onProgressChange],
+    [timeRange, columnWidth, viewMode, onTaskMove, onTaskResize, onProgressChange, ghostRectRef],
   );
 
   const handleMoveStart = useCallback(
@@ -278,8 +324,7 @@ export function useGanttDrag(options: UseGanttDragOptions): UseGanttDragResult {
   }, []);
 
   return {
-    dragState,
-    isDragging: dragState !== null,
+    isDragging,
     didDrag: didDragRef.current,
     clearDidDrag,
     handleMoveStart,

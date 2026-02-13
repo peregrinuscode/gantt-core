@@ -118,6 +118,8 @@ export declare interface GanttChartProps {
     theme?: GanttTheme;
     /** Locale for date formatting (e.g. 'es-MX', 'en-US') */
     locale?: string;
+    /** IDs of groups/tasks that should start collapsed */
+    initialCollapsed?: string[];
     /** Fired when a task bar is moved (drag) */
     onTaskMove?: (event: TaskChangeEvent) => void;
     /** Fired when a task bar edge is dragged (resize) */
