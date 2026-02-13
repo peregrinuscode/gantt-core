@@ -240,7 +240,6 @@
 .gantt-bar-group--summary .gantt-bar-bg {
   stroke: currentColor;
   stroke-width: 1;
-  stroke-dasharray: 4 2;
 }
 
 /* ---- Drag interactions ---- */
