@@ -164,6 +164,8 @@ Pass a `theme` prop or set CSS custom properties on a parent element:
 | `--gantt-row-selected` | | Selected row background |
 | `--gantt-font` | | Font family |
 | `--gantt-font-size` | | Font size |
+| `--gantt-disabled-opacity` | `1` | Opacity for disabled (non-interactive) task bars |
+| `--gantt-summary-opacity` | `1` | Opacity for summary bars on collapsed groups |
 
 ## Advanced Usage
 
