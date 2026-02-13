@@ -99,6 +99,10 @@ export interface GanttTheme {
   '--gantt-font'?: string;
   /** Font size */
   '--gantt-font-size'?: string;
+  /** Opacity for disabled (non-interactive) task bars. Default: 1 (full opacity) */
+  '--gantt-disabled-opacity'?: string;
+  /** Opacity for summary bars on collapsed groups. Default: 1 */
+  '--gantt-summary-opacity'?: string;
 }
 
 /** Main component props */
