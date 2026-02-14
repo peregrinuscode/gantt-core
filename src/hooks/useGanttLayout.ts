@@ -7,7 +7,7 @@ import {
   type TimeRange,
   type DateColumn,
 } from '../utils/dateUtils';
-import { hexToRgba } from '../utils/colors';
+
 
 /** A single visible row (group header or task) */
 export interface GanttRow {
@@ -212,7 +212,7 @@ export function useGanttLayout(
             y: y + (rowHeight - barHeight) / 2,
             width: sWidth,
             height: barHeight,
-            color: hexToRgba(group.color, 0.5),
+            color: group.color,
             progress: 0,
             name: group.name,
             isSummary: true,

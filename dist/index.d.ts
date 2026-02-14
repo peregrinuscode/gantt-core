@@ -244,6 +244,10 @@ export declare interface GanttTheme {
     '--gantt-disabled-opacity'?: string;
     /** Opacity for summary bars on collapsed groups. Default: 1 */
     '--gantt-summary-opacity'?: string;
+    /** Stroke color for summary bars. Default: none */
+    '--gantt-summary-stroke'?: string;
+    /** Stroke width for summary bars. Default: 0 */
+    '--gantt-summary-stroke-width'?: string;
 }
 
 /** Convert a hex color to an rgba() string. */
