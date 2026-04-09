@@ -52,8 +52,11 @@ export function GanttTaskList({
           <div
             key={row.id}
             className={`gantt-task-list-row ${row.type === 'group' ? 'gantt-task-list-row--group' : ''}`}
-            style={{ height: rowHeight }}
-            role="listitem"
+            style={{ height: rowHeight, cursor: row.hasChildren ? 'pointer' : undefined }}
+            role={row.hasChildren ? 'button' : 'listitem'}
+            aria-expanded={row.hasChildren ? !row.isCollapsed : undefined}
+            aria-label={row.hasChildren ? (row.isCollapsed ? `Expand ${row.name}` : `Collapse ${row.name}`) : undefined}
+            onClick={row.hasChildren ? () => onToggleCollapse(rawId) : undefined}
           >
             {/* Colored accent bar for group rows */}
             {row.type === 'group' && row.color && (
@@ -68,14 +71,9 @@ export function GanttTaskList({
 
             {/* Toggle button or spacer */}
             {row.hasChildren ? (
-              <button
-                className="gantt-task-list-toggle"
-                onClick={() => onToggleCollapse(rawId)}
-                aria-label={row.isCollapsed ? `Expand ${row.name}` : `Collapse ${row.name}`}
-                aria-expanded={!row.isCollapsed}
-              >
+              <span className="gantt-task-list-toggle">
                 <Chevron expanded={!row.isCollapsed} />
-              </button>
+              </span>
             ) : (
               <div className="gantt-task-list-toggle-spacer" />
             )}
