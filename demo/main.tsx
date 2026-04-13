@@ -1,7 +1,14 @@
 import React, { useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import { GanttChart } from '@peregrinus/gantt-core';
-import type { GanttTask, GanttGroup, ViewMode, TaskChangeEvent, ProgressChangeEvent } from '@peregrinus/gantt-core';
+import type {
+  GanttTask,
+  GanttGroup,
+  GanttDependency,
+  ViewMode,
+  TaskChangeEvent,
+  ProgressChangeEvent,
+} from '@peregrinus/gantt-core';
 
 // --- Mock data simulating a construction project ---
 
@@ -21,29 +28,55 @@ const d = (offset: number): Date => {
 const initialTasks: GanttTask[] = [
   // Structural
   { id: 's1', name: 'Cimentación', start: d(-10), end: d(5), progress: 80, groupId: 'structural', sortOrder: 1 },
-  { id: 's2', name: 'Columnas planta baja', start: d(5), end: d(20), progress: 30, groupId: 'structural', dependencies: ['s1'], sortOrder: 2 },
+  { id: 's2', name: 'Columnas planta baja', start: d(5), end: d(20), progress: 30, groupId: 'structural', sortOrder: 2 },
   { id: 's2a', name: 'Armado', start: d(5), end: d(12), progress: 50, groupId: 'structural', parentId: 's2', sortOrder: 1 },
-  { id: 's2b', name: 'Colado', start: d(12), end: d(20), progress: 0, groupId: 'structural', parentId: 's2', dependencies: ['s2a'], sortOrder: 2 },
-  { id: 's3', name: 'Losa nivel 1', start: d(20), end: d(35), progress: 0, groupId: 'structural', dependencies: ['s2'], sortOrder: 3 },
+  { id: 's2b', name: 'Colado', start: d(12), end: d(20), progress: 0, groupId: 'structural', parentId: 's2', sortOrder: 2 },
+  { id: 's3', name: 'Losa nivel 1', start: d(20), end: d(35), progress: 0, groupId: 'structural', sortOrder: 3 },
 
   // Electrical
   { id: 'e1', name: 'Acometida eléctrica', start: d(0), end: d(10), progress: 60, groupId: 'electrical', sortOrder: 1 },
-  { id: 'e2', name: 'Canalización PB', start: d(10), end: d(25), progress: 10, groupId: 'electrical', dependencies: ['e1', 's2'], sortOrder: 2 },
+  { id: 'e2', name: 'Canalización PB', start: d(10), end: d(25), progress: 10, groupId: 'electrical', sortOrder: 2 },
 
   // Finishes
-  { id: 'f1', name: 'Aplanados muros', start: d(25), end: d(40), progress: 0, groupId: 'finishes', dependencies: ['s3'], sortOrder: 1 },
-  { id: 'f2', name: 'Piso cerámico', start: d(35), end: d(50), progress: 0, groupId: 'finishes', dependencies: ['f1'], sortOrder: 2, disabled: true },
-  { id: 'f3', name: 'Pintura', start: d(45), end: d(55), progress: 0, groupId: 'finishes', dependencies: ['f1'], sortOrder: 3 },
+  { id: 'f1', name: 'Aplanados muros', start: d(25), end: d(40), progress: 0, groupId: 'finishes', sortOrder: 1 },
+  { id: 'f2', name: 'Piso cerámico', start: d(35), end: d(50), progress: 0, groupId: 'finishes', sortOrder: 2, disabled: true },
+  { id: 'f3', name: 'Pintura', start: d(45), end: d(55), progress: 0, groupId: 'finishes', sortOrder: 3 },
 ];
 
-/** Generate a large set of tasks for performance testing */
-function generateManyTasks(count: number): GanttTask[] {
+// All four dependency types so each routing is visibly verifiable.
+const initialDependencies: GanttDependency[] = [
+  // FS — the common one
+  { fromTaskId: 's1', toTaskId: 's2', type: 'FS' },
+  { fromTaskId: 's2a', toTaskId: 's2b', type: 'FS' },
+  { fromTaskId: 's2', toTaskId: 's3', type: 'FS' },
+  { fromTaskId: 'e1', toTaskId: 'e2', type: 'FS' },
+  { fromTaskId: 's2', toTaskId: 'e2', type: 'FS' },
+  { fromTaskId: 's3', toTaskId: 'f1', type: 'FS' },
+  { fromTaskId: 'f1', toTaskId: 'f2', type: 'FS' },
+  { fromTaskId: 'f1', toTaskId: 'f3', type: 'FS' },
+
+  // SS — electrical crew can't mobilize until foundation crew does
+  { fromTaskId: 's1', toTaskId: 'e1', type: 'SS' },
+
+  // FF — canalización must wrap up by the time the columns are poured
+  { fromTaskId: 's2b', toTaskId: 'e2', type: 'FF' },
+
+  // SF — (contrived but visually useful) pintura can't finish until piso cerámico starts
+  { fromTaskId: 'f2', toTaskId: 'f3', type: 'SF' },
+];
+
+/** Generate a large set of tasks + FS dependencies for performance testing */
+function generateManyTasks(count: number): {
+  tasks: GanttTask[];
+  dependencies: GanttDependency[];
+} {
   const colors = ['#4CAF50', '#2196F3', '#FF9800', '#9C27B0', '#F44336', '#00BCD4'];
-  const result: GanttTask[] = [];
+  const tasks: GanttTask[] = [];
+  const dependencies: GanttDependency[] = [];
   for (let i = 0; i < count; i++) {
     const startOffset = Math.floor(Math.random() * 60) - 10;
     const duration = Math.floor(Math.random() * 20) + 3;
-    result.push({
+    tasks.push({
       id: `perf-${i}`,
       name: `Task ${i + 1}`,
       start: d(startOffset),
@@ -52,10 +85,12 @@ function generateManyTasks(count: number): GanttTask[] {
       groupId: groups[i % groups.length].id,
       color: colors[i % colors.length],
       sortOrder: i,
-      dependencies: i > 0 && Math.random() > 0.6 ? [`perf-${i - 1}`] : undefined,
     });
+    if (i > 0 && Math.random() > 0.6) {
+      dependencies.push({ fromTaskId: `perf-${i - 1}`, toTaskId: `perf-${i}`, type: 'FS' });
+    }
   }
-  return result;
+  return { tasks, dependencies };
 }
 
 const controlStyle: React.CSSProperties = {
@@ -68,6 +103,7 @@ const controlStyle: React.CSSProperties = {
 
 function App() {
   const [tasks, setTasks] = useState<GanttTask[]>(initialTasks);
+  const [dependencies, setDependencies] = useState<GanttDependency[]>(initialDependencies);
   const [readOnly, setReadOnly] = useState(false);
   const [showDependencies, setShowDependencies] = useState(true);
   const [viewMode, setViewMode] = useState<ViewMode>('week');
@@ -109,9 +145,12 @@ function App() {
   const togglePerfMode = () => {
     if (perfMode) {
       setTasks(initialTasks);
+      setDependencies(initialDependencies);
       setPerfMode(false);
     } else {
-      setTasks(generateManyTasks(200));
+      const generated = generateManyTasks(200);
+      setTasks(generated.tasks);
+      setDependencies(generated.dependencies);
       setPerfMode(true);
     }
   };
@@ -125,6 +164,8 @@ function App() {
         Construction project mock data. Drag bars to move, edges to resize, progress handle to update progress.
         <br />
         "Piso cerámico" is disabled (dimmed, not draggable).
+        <br />
+        Four dependency types are wired: FS (default), SS (s1→e1), FF (s2b→e2), SF (f2→f3).
       </p>
 
       <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', marginBottom: 16, alignItems: 'center' }}>
@@ -177,6 +218,7 @@ function App() {
 
       <GanttChart
         tasks={tasks}
+        dependencies={dependencies}
         groups={groups}
         viewMode={viewMode}
         taskListWidth={250}

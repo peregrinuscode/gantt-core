@@ -19,10 +19,13 @@ const DEFAULT_COLUMN_WIDTH: Record<ViewMode, number> = {
 
 const DEFAULT_ROW_HEIGHT = 50;
 const HEADER_HEIGHT = 40;
+/** Extra SVG height beyond the rows, so dependency arrows that detour below the last row stay visible. */
+const ARROW_BOTTOM_PAD_RATIO = 0.8;
 
 export function GanttChart(props: GanttChartProps) {
   const {
     tasks,
+    dependencies = [],
     groups = [],
     viewMode = 'week',
     taskListWidth = 0,
@@ -60,6 +63,7 @@ export function GanttChart(props: GanttChartProps) {
   );
 
   const { rows, bars, columns, timeRange, totalWidth, totalHeight } = layout;
+  const svgHeight = totalHeight + rowHeight * ARROW_BOTTOM_PAD_RATIO;
 
   // Handle clicks on task bars — summary bars expand their group
   const handleBarClick = (taskId: string) => {
@@ -153,7 +157,7 @@ export function GanttChart(props: GanttChartProps) {
               ref={svgRef}
               className={`gantt-svg${!readOnly ? ' gantt-svg--interactive' : ''}`}
               width={totalWidth}
-              height={totalHeight}
+              height={svgHeight}
               onPointerMove={drag.handlePointerMove}
               onPointerUp={drag.handlePointerUp}
             >
@@ -215,7 +219,7 @@ export function GanttChart(props: GanttChartProps) {
               {/* Dependency arrows layer (behind bars) */}
               {showDependencies && (
                 <GanttDependencies
-                  tasks={tasks}
+                  dependencies={dependencies}
                   bars={bars}
                   rowHeight={rowHeight}
                 />

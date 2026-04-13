@@ -1,17 +1,16 @@
 import { useMemo } from 'react';
-import type { GanttTask } from '../types';
+import type { GanttDependency } from '../types';
 import type { GanttBar } from '../hooks/useGanttLayout';
 import { computeArrowPath } from '../utils/arrowPath';
 
 interface GanttDependenciesProps {
-  tasks: GanttTask[];
+  dependencies: GanttDependency[];
   bars: GanttBar[];
   rowHeight: number;
 }
 
-export function GanttDependencies({ tasks, bars, rowHeight }: GanttDependenciesProps) {
+export function GanttDependencies({ dependencies, bars, rowHeight }: GanttDependenciesProps) {
   const arrows = useMemo(() => {
-    // Build O(1) lookup: taskId → bar
     const barMap = new Map<string, GanttBar>();
     for (const bar of bars) {
       barMap.set(bar.taskId, bar);
@@ -19,39 +18,33 @@ export function GanttDependencies({ tasks, bars, rowHeight }: GanttDependenciesP
 
     const result: { key: string; path: string; arrowHead: string }[] = [];
 
-    for (const task of tasks) {
-      if (!task.dependencies?.length) continue;
+    for (const dep of dependencies) {
+      const sourceBar = barMap.get(dep.fromTaskId);
+      const targetBar = barMap.get(dep.toTaskId);
+      if (!sourceBar || !targetBar) continue; // one endpoint is hidden (collapsed)
 
-      const targetBar = barMap.get(task.id);
-      if (!targetBar) continue; // target is hidden (collapsed)
+      const arrow = computeArrowPath({
+        sourceLeft: sourceBar.x,
+        sourceTop: sourceBar.y,
+        sourceWidth: sourceBar.width,
+        sourceHeight: sourceBar.height,
+        targetLeft: targetBar.x,
+        targetTop: targetBar.y,
+        targetWidth: targetBar.width,
+        targetHeight: targetBar.height,
+        rowHeight,
+        type: dep.type,
+      });
 
-      for (const depId of task.dependencies) {
-        const sourceBar = barMap.get(depId);
-        if (!sourceBar) continue; // source is hidden (collapsed)
-
-        const arrow = computeArrowPath({
-          sourceX: sourceBar.x + sourceBar.width,
-          sourceY: sourceBar.y + sourceBar.height / 2,
-          targetX: targetBar.x,
-          targetY: targetBar.y + targetBar.height / 2,
-          rowHeight,
-          sourceWidth: sourceBar.width,
-          sourceTop: sourceBar.y,
-          targetTop: targetBar.y,
-          sourceHeight: sourceBar.height,
-          targetHeight: targetBar.height,
-        });
-
-        result.push({
-          key: `${depId}->${task.id}`,
-          path: arrow.path,
-          arrowHead: arrow.arrowHead,
-        });
-      }
+      result.push({
+        key: `${dep.fromTaskId}->${dep.toTaskId}:${dep.type}`,
+        path: arrow.path,
+        arrowHead: arrow.arrowHead,
+      });
     }
 
     return result;
-  }, [tasks, bars, rowHeight]);
+  }, [dependencies, bars, rowHeight]);
 
   if (arrows.length === 0) return null;
 

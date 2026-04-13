@@ -8,6 +8,26 @@
 /** Time scale for the timeline grid */
 export type ViewMode = 'day' | 'week' | 'month';
 
+/**
+ * Dependency type between two tasks.
+ *
+ * - `FS` (Finish-to-Start): successor starts after predecessor finishes.
+ * - `SS` (Start-to-Start): successor starts after predecessor starts.
+ * - `FF` (Finish-to-Finish): successor finishes after predecessor finishes.
+ * - `SF` (Start-to-Finish): successor finishes after predecessor starts.
+ */
+export type DependencyType = 'FS' | 'SS' | 'FF' | 'SF';
+
+/** An edge between two tasks, rendered as a typed arrow */
+export interface GanttDependency {
+  /** Predecessor task id */
+  fromTaskId: string;
+  /** Successor task id */
+  toTaskId: string;
+  /** Routing semantics for the arrow */
+  type: DependencyType;
+}
+
 /** A single task bar on the chart */
 export interface GanttTask {
   /** Unique identifier */
@@ -16,7 +36,7 @@ export interface GanttTask {
   name: string;
   /** Bar start date */
   start: Date;
-  /** Bar end date (exclusive — the bar covers start..end-1) */
+  /** Bar end date (exclusive — the bar covers start..end-1). If equal to `start`, the task renders as a milestone diamond. */
   end: Date;
   /** Completion percentage 0-100 */
   progress: number;
@@ -24,14 +44,14 @@ export interface GanttTask {
   groupId?: string;
   /** Parent task id for hierarchy (tree structure) */
   parentId?: string;
-  /** IDs of tasks this task depends on (arrows drawn FROM dependency TO this task) */
-  dependencies?: string[];
   /** Sort order within its group/parent */
   sortOrder?: number;
   /** Disable drag/resize for this specific task */
   disabled?: boolean;
   /** Custom color for this task bar (overrides group color) */
   color?: string;
+  /** Mark the task as critical — renderer applies a distinct stroke treatment */
+  critical?: boolean;
   /** Arbitrary metadata passed through to event callbacks */
   meta?: Record<string, unknown>;
 }
@@ -61,10 +81,11 @@ export interface ProgressChangeEvent {
   progress: number;
 }
 
-/** Dependency creation result */
+/** Dependency creation result (emitted by link mode — future) */
 export interface DependencyCreateEvent {
   fromTaskId: string;
   toTaskId: string;
+  type: DependencyType;
 }
 
 /** Theme configuration via CSS custom properties */
@@ -107,12 +128,22 @@ export interface GanttTheme {
   '--gantt-summary-stroke'?: string;
   /** Stroke width for summary bars. Default: 0 */
   '--gantt-summary-stroke-width'?: string;
+  /** Stroke color applied to bars with `critical: true` */
+  '--gantt-bar-critical-stroke'?: string;
+  /** Stroke width for critical bars. Default: '2px' */
+  '--gantt-bar-critical-stroke-width'?: string;
+  /** Fill color for milestone diamonds. Default: inherits the task color */
+  '--gantt-milestone-fill'?: string;
+  /** Size (width/height) of milestone diamonds in px. Default: rowHeight × 0.6 */
+  '--gantt-milestone-size'?: string;
 }
 
 /** Main component props */
 export interface GanttChartProps {
   /** Array of tasks to display */
   tasks: GanttTask[];
+  /** Dependency edges between tasks. Each edge renders as a typed arrow. */
+  dependencies?: GanttDependency[];
   /** Optional grouping (categories). Tasks with matching groupId are grouped under these. */
   groups?: GanttGroup[];
   /** Time scale */

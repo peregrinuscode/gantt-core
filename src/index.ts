@@ -22,6 +22,8 @@ export type {
   GanttChartProps,
   GanttTheme,
   ViewMode,
+  DependencyType,
+  GanttDependency,
   TaskChangeEvent,
   ProgressChangeEvent,
   DependencyCreateEvent,

@@ -1,43 +1,37 @@
 import { JSX as JSX_2 } from 'react/jsx-runtime';
 
-/** Input endpoints for an arrow from source bar to target bar */
+/** Source and target bar geometry + dependency type */
 export declare interface ArrowEndpoints {
-    /** Source bar right edge x */
-    sourceX: number;
-    /** Source bar vertical center y */
-    sourceY: number;
-    /** Target bar left edge x */
-    targetX: number;
-    /** Target bar vertical center y */
-    targetY: number;
-    /** Row height — used for detour routing when bars overlap */
-    rowHeight: number;
-    /** Source bar width — used for backward routing */
-    sourceWidth: number;
+    /** Source bar left-edge x */
+    sourceLeft: number;
     /** Source bar top y */
     sourceTop: number;
-    /** Target bar top y */
-    targetTop: number;
+    /** Source bar width (0 for milestones) */
+    sourceWidth: number;
     /** Source bar height */
     sourceHeight: number;
+    /** Target bar left-edge x */
+    targetLeft: number;
+    /** Target bar top y */
+    targetTop: number;
+    /** Target bar width (0 for milestones) */
+    targetWidth: number;
     /** Target bar height */
     targetHeight: number;
+    /** Row height — used to size the detour offset below/above bars */
+    rowHeight: number;
+    /** Dependency type — selects source/target edges and routing */
+    type: DependencyType;
 }
 
 /** Result: SVG path `d` attribute + arrowhead polygon `points` */
 export declare interface ArrowPathResult {
-    /** SVG path d attribute for the connecting line */
     path: string;
-    /** SVG polygon points for the arrowhead triangle */
     arrowHead: string;
 }
 
 /**
- * Compute the SVG path and arrowhead for a dependency arrow.
- *
- * Two routing cases:
- * 1. **Normal**: target is to the right of source — route right → vertical → right to target
- * 2. **Backward**: target overlaps or is left of source — route around via detour
+ * Compute the SVG path and arrowhead for a typed dependency arrow.
  */
 export declare function computeArrowPath(ep: ArrowEndpoints, cornerRadius?: number): ArrowPathResult;
 
@@ -58,11 +52,22 @@ export declare interface DateColumn {
     isWeekend: boolean;
 }
 
-/** Dependency creation result */
+/** Dependency creation result (emitted by link mode — future) */
 export declare interface DependencyCreateEvent {
     fromTaskId: string;
     toTaskId: string;
+    type: DependencyType;
 }
+
+/**
+ * Dependency type between two tasks.
+ *
+ * - `FS` (Finish-to-Start): successor starts after predecessor finishes.
+ * - `SS` (Start-to-Start): successor starts after predecessor starts.
+ * - `FF` (Finish-to-Finish): successor finishes after predecessor finishes.
+ * - `SF` (Start-to-Finish): successor finishes after predecessor starts.
+ */
+export declare type DependencyType = 'FS' | 'SS' | 'FF' | 'SF';
 
 export declare type DragMode = 'move' | 'resize-left' | 'resize-right' | 'progress';
 
@@ -98,6 +103,8 @@ export declare function GanttChart(props: GanttChartProps): JSX_2.Element;
 export declare interface GanttChartProps {
     /** Array of tasks to display */
     tasks: GanttTask[];
+    /** Dependency edges between tasks. Each edge renders as a typed arrow. */
+    dependencies?: GanttDependency[];
     /** Optional grouping (categories). Tasks with matching groupId are grouped under these. */
     groups?: GanttGroup[];
     /** Time scale */
@@ -132,6 +139,16 @@ export declare interface GanttChartProps {
     onTaskDoubleClick?: (taskId: string) => void;
     /** Fired when a dependency is created via link mode */
     onDependencyCreate?: (event: DependencyCreateEvent) => void;
+}
+
+/** An edge between two tasks, rendered as a typed arrow */
+export declare interface GanttDependency {
+    /** Predecessor task id */
+    fromTaskId: string;
+    /** Successor task id */
+    toTaskId: string;
+    /** Routing semantics for the arrow */
+    type: DependencyType;
 }
 
 /** A collapsible group of tasks (rendered as a header row in the task list) */
@@ -188,7 +205,7 @@ export declare interface GanttTask {
     name: string;
     /** Bar start date */
     start: Date;
-    /** Bar end date (exclusive — the bar covers start..end-1) */
+    /** Bar end date (exclusive — the bar covers start..end-1). If equal to `start`, the task renders as a milestone diamond. */
     end: Date;
     /** Completion percentage 0-100 */
     progress: number;
@@ -196,14 +213,14 @@ export declare interface GanttTask {
     groupId?: string;
     /** Parent task id for hierarchy (tree structure) */
     parentId?: string;
-    /** IDs of tasks this task depends on (arrows drawn FROM dependency TO this task) */
-    dependencies?: string[];
     /** Sort order within its group/parent */
     sortOrder?: number;
     /** Disable drag/resize for this specific task */
     disabled?: boolean;
     /** Custom color for this task bar (overrides group color) */
     color?: string;
+    /** Mark the task as critical — renderer applies a distinct stroke treatment */
+    critical?: boolean;
     /** Arbitrary metadata passed through to event callbacks */
     meta?: Record<string, unknown>;
 }
@@ -248,6 +265,14 @@ export declare interface GanttTheme {
     '--gantt-summary-stroke'?: string;
     /** Stroke width for summary bars. Default: 0 */
     '--gantt-summary-stroke-width'?: string;
+    /** Stroke color applied to bars with `critical: true` */
+    '--gantt-bar-critical-stroke'?: string;
+    /** Stroke width for critical bars. Default: '2px' */
+    '--gantt-bar-critical-stroke-width'?: string;
+    /** Fill color for milestone diamonds. Default: inherits the task color */
+    '--gantt-milestone-fill'?: string;
+    /** Size (width/height) of milestone diamonds in px. Default: rowHeight × 0.6 */
+    '--gantt-milestone-size'?: string;
 }
 
 /** Convert a hex color to an rgba() string. */

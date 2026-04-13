@@ -1,22 +1,22 @@
-import { jsxs as _, jsx as h, Fragment as dt } from "react/jsx-runtime";
-import { useMemo as et, useState as nt, useCallback as X, useRef as U } from "react";
-function W(t) {
+import { jsxs as F, jsx as g, Fragment as $t } from "react/jsx-runtime";
+import { useMemo as et, useState as nt, useCallback as A, useRef as q } from "react";
+function U(t) {
   const e = new Date(t);
   return e.setHours(0, 0, 0, 0), e;
 }
-function J(t) {
-  const e = W(t), n = e.getDay(), a = n === 0 ? 6 : n - 1;
-  return e.setDate(e.getDate() - a), e;
+function X(t) {
+  const e = U(t), n = e.getDay(), s = n === 0 ? 6 : n - 1;
+  return e.setDate(e.getDate() - s), e;
 }
-function K(t) {
-  const e = W(t);
+function Y(t) {
+  const e = U(t);
   return e.setDate(1), e;
 }
-const gt = 864e5;
-function ht(t, e) {
-  return (W(e).getTime() - W(t).getTime()) / gt;
+const yt = 864e5;
+function xt(t, e) {
+  return (U(e).getTime() - U(t).getTime()) / yt;
 }
-function O(t, e) {
+function W(t, e) {
   const n = new Date(t);
   return n.setDate(n.getDate() + e), n;
 }
@@ -24,423 +24,423 @@ function rt(t, e) {
   const n = new Date(t);
   return n.setMonth(n.getMonth() + e), n;
 }
-function ut(t, e = "week") {
+function kt(t, e = "week") {
   if (t.length === 0) {
     const l = /* @__PURE__ */ new Date();
-    return { start: O(l, -14), end: O(l, 14) };
+    return { start: W(l, -14), end: W(l, 14) };
   }
-  let n = t[0].start.getTime(), a = t[0].end.getTime();
+  let n = t[0].start.getTime(), s = t[0].end.getTime();
   for (const l of t)
-    l.start.getTime() < n && (n = l.start.getTime()), l.end.getTime() > a && (a = l.end.getTime());
-  const s = e === "month" ? 30 : 7, r = O(new Date(n), -s), i = O(new Date(a), s), o = e === "month" ? K(r) : e === "week" ? J(r) : W(r), c = e === "month" ? K(rt(i, 1)) : e === "week" ? O(J(i), 7) : O(W(i), 1);
-  return { start: o, end: c };
+    l.start.getTime() < n && (n = l.start.getTime()), l.end.getTime() > s && (s = l.end.getTime());
+  const r = e === "month" ? 30 : 7, a = W(new Date(n), -r), o = W(new Date(s), r), i = e === "month" ? Y(a) : e === "week" ? X(a) : U(a), c = e === "month" ? Y(rt(o, 1)) : e === "week" ? W(X(o), 7) : W(U(o), 1);
+  return { start: i, end: c };
 }
-function q(t, e, n, a) {
-  if (a === "month") {
-    const i = pt(e.start, t), o = st(t), l = (t.getDate() - 1) / o;
-    return (Math.floor(i) + l) * n;
+function V(t, e, n, s) {
+  if (s === "month") {
+    const o = wt(e.start, t), i = st(t), l = (t.getDate() - 1) / i;
+    return (Math.floor(o) + l) * n;
   }
-  return ht(e.start, t) / (a === "week" ? 7 : 1) * n;
+  return xt(e.start, t) / (s === "week" ? 7 : 1) * n;
 }
-function ot(t, e, n, a) {
-  if (a === "month") {
-    const i = t / n, o = Math.floor(i), c = i - o, l = rt(e.start, o), m = st(l);
-    return O(l, Math.round(c * m));
+function ot(t, e, n, s) {
+  if (s === "month") {
+    const o = t / n, i = Math.floor(o), c = o - i, l = rt(e.start, i), y = st(l);
+    return W(l, Math.round(c * y));
   }
-  const s = a === "week" ? 7 : 1, r = t / n * s;
-  return O(e.start, Math.round(r));
+  const r = s === "week" ? 7 : 1, a = t / n * r;
+  return W(e.start, Math.round(a));
 }
-function ft(t, e, n, a) {
-  const s = [];
+function Dt(t, e, n, s) {
+  const r = [];
   if (n === "month") {
-    let c = K(t.start), l = 0;
+    let c = Y(t.start), l = 0;
     for (; c.getTime() < t.end.getTime(); )
-      s.push({
+      r.push({
         index: l,
         date: new Date(c),
-        label: xt(c, a),
+        label: Tt(c, s),
         x: l * e,
         isWeekend: !1
       }), c = rt(c, 1), l++;
-    return s;
+    return r;
   }
-  const r = n === "week" ? 7 : 1;
-  let i = n === "week" ? J(t.start) : W(t.start), o = 0;
-  for (; i.getTime() < t.end.getTime(); ) {
-    const c = i.getDay();
-    s.push({
-      index: o,
-      date: new Date(i),
-      label: n === "week" ? yt(i, a) : mt(i, a),
-      x: o * e,
+  const a = n === "week" ? 7 : 1;
+  let o = n === "week" ? X(t.start) : U(t.start), i = 0;
+  for (; o.getTime() < t.end.getTime(); ) {
+    const c = o.getDay();
+    r.push({
+      index: i,
+      date: new Date(o),
+      label: n === "week" ? It(o, s) : Lt(o, s),
+      x: i * e,
       isWeekend: c === 0 || c === 6
-    }), i = O(i, r), o++;
+    }), o = W(o, a), i++;
   }
-  return s;
+  return r;
 }
 function it(t, e) {
   switch (e) {
     case "day":
-      return W(t);
+      return U(t);
     case "week":
-      return J(t);
+      return X(t);
     case "month":
-      return K(t);
+      return Y(t);
   }
 }
-function pt(t, e) {
+function wt(t, e) {
   return (e.getFullYear() - t.getFullYear()) * 12 + (e.getMonth() - t.getMonth()) + (e.getDate() - t.getDate()) / st(t);
 }
 function st(t) {
   return new Date(t.getFullYear(), t.getMonth() + 1, 0).getDate();
 }
-function mt(t, e) {
+function Lt(t, e) {
   return t.toLocaleDateString(e, { month: "short", day: "numeric" });
 }
-function yt(t, e) {
+function It(t, e) {
   return t.toLocaleDateString(e, { month: "short", day: "numeric" });
 }
-function xt(t, e) {
+function Tt(t, e) {
   return t.toLocaleDateString(e, { month: "short", year: "numeric" });
 }
-const $t = "#3f51b5", kt = 0.7;
-function Dt(t, e, n, a, s, r, i) {
+const St = "#3f51b5", Mt = 0.7;
+function Nt(t, e, n, s, r, a, o) {
   return et(() => {
-    const o = ut(t, n), c = ft(o, s, n, i), l = /* @__PURE__ */ new Map();
-    for (const g of e)
-      l.set(g.id, g.color);
-    const m = /* @__PURE__ */ new Map(), T = /* @__PURE__ */ new Map();
-    for (const g of t)
-      if (m.set(g.id, g), g.parentId) {
-        const D = T.get(g.parentId) ?? [];
-        D.push(g), T.set(g.parentId, D);
+    const i = kt(t, n), c = Dt(i, r, n, o), l = /* @__PURE__ */ new Map();
+    for (const h of e)
+      l.set(h.id, h.color);
+    const y = /* @__PURE__ */ new Map(), $ = /* @__PURE__ */ new Map();
+    for (const h of t)
+      if (y.set(h.id, h), h.parentId) {
+        const I = $.get(h.parentId) ?? [];
+        I.push(h), $.set(h.parentId, I);
       }
-    const B = [...e].sort(
-      (g, D) => (g.sortOrder ?? 0) - (D.sortOrder ?? 0)
-    ), w = [], v = [], C = a * kt;
-    function Y(g, D, E) {
-      const G = [...g].sort(
-        ($, N) => ($.sortOrder ?? 0) - (N.sortOrder ?? 0)
+    const P = [...e].sort(
+      (h, I) => (h.sortOrder ?? 0) - (I.sortOrder ?? 0)
+    ), D = [], w = [], v = s * Mt;
+    function E(h, I, b) {
+      const G = [...h].sort(
+        (k, N) => (k.sortOrder ?? 0) - (N.sortOrder ?? 0)
       );
-      for (const $ of G) {
-        const N = w.length * a, M = T.get($.id), P = !!M && M.length > 0, p = r.has($.id);
-        w.push({
+      for (const k of G) {
+        const N = D.length * s, C = $.get(k.id), O = !!C && C.length > 0, f = a.has(k.id);
+        D.push({
           type: "task",
-          id: `task-${$.id}`,
+          id: `task-${k.id}`,
           y: N,
-          height: a,
-          groupId: D,
-          taskId: $.id,
-          level: E,
-          name: $.name,
-          color: $.color ?? l.get(D),
-          hasChildren: P,
-          isCollapsed: p
+          height: s,
+          groupId: I,
+          taskId: k.id,
+          level: b,
+          name: k.name,
+          color: k.color ?? l.get(I),
+          hasChildren: O,
+          isCollapsed: f
         });
-        const f = q($.start, o, s, n), y = q($.end, o, s, n), d = Math.max(y - f, 2), L = $.color ?? l.get(D) ?? $t;
-        v.push({
-          taskId: $.id,
-          x: f,
-          y: N + (a - C) / 2,
+        const p = V(k.start, i, r, n), m = V(k.end, i, r, n), d = Math.max(m - p, 2), T = k.color ?? l.get(I) ?? St;
+        w.push({
+          taskId: k.id,
+          x: p,
+          y: N + (s - v) / 2,
           width: d,
-          height: C,
-          color: L,
-          progress: $.progress,
-          name: $.name
-        }), M && !p && Y(M, D, E + 1);
+          height: v,
+          color: T,
+          progress: k.progress,
+          name: k.name
+        }), C && !f && E(C, I, b + 1);
       }
     }
-    if (B.length > 0)
-      for (const g of B) {
-        const D = t.filter(
-          (N) => N.groupId === g.id && !N.parentId
-        ), E = D.length > 0, G = r.has(g.id), $ = w.length * a;
-        if (w.push({
+    if (P.length > 0)
+      for (const h of P) {
+        const I = t.filter(
+          (N) => N.groupId === h.id && !N.parentId
+        ), b = I.length > 0, G = a.has(h.id), k = D.length * s;
+        if (D.push({
           type: "group",
-          id: `group-${g.id}`,
-          y: $,
-          height: a,
-          groupId: g.id,
+          id: `group-${h.id}`,
+          y: k,
+          height: s,
+          groupId: h.id,
           level: 0,
-          name: g.name,
-          color: g.color,
-          hasChildren: E,
+          name: h.name,
+          color: h.color,
+          hasChildren: b,
           isCollapsed: G
         }), !G)
-          Y(D, g.id, 1);
-        else if (E) {
-          const N = t.filter((d) => d.groupId === g.id);
-          let M = N[0].start, P = N[0].end;
+          E(I, h.id, 1);
+        else if (b) {
+          const N = t.filter((d) => d.groupId === h.id);
+          let C = N[0].start, O = N[0].end;
           for (const d of N)
-            d.start < M && (M = d.start), d.end > P && (P = d.end);
-          const p = q(M, o, s, n), f = q(P, o, s, n), y = Math.max(f - p, 2);
-          v.push({
-            taskId: `group-summary-${g.id}`,
-            x: p,
-            y: $ + (a - C) / 2,
-            width: y,
-            height: C,
-            color: g.color,
+            d.start < C && (C = d.start), d.end > O && (O = d.end);
+          const f = V(C, i, r, n), p = V(O, i, r, n), m = Math.max(p - f, 2);
+          w.push({
+            taskId: `group-summary-${h.id}`,
+            x: f,
+            y: k + (s - v) / 2,
+            width: m,
+            height: v,
+            color: h.color,
             progress: 0,
-            name: g.name,
+            name: h.name,
             isSummary: !0
           });
         }
       }
     else {
-      const g = t.filter((D) => !D.parentId);
-      Y(g, "", 1);
+      const h = t.filter((I) => !I.parentId);
+      E(h, "", 1);
     }
-    const k = c.length > 0 ? c[c.length - 1].x + s : 0, A = w.length * a;
-    return { rows: w, bars: v, columns: c, timeRange: o, totalWidth: k, totalHeight: A };
-  }, [t, e, n, a, s, r, i]);
+    const L = c.length > 0 ? c[c.length - 1].x + r : 0, z = D.length * s;
+    return { rows: D, bars: w, columns: c, timeRange: i, totalWidth: L, totalHeight: z };
+  }, [t, e, n, s, r, a, o]);
 }
-function wt(t) {
+function vt(t) {
   const [e, n] = nt(
     () => new Set(t)
-  ), a = X((r) => {
-    n((i) => {
-      const o = new Set(i);
-      return o.has(r) ? o.delete(r) : o.add(r), o;
+  ), s = A((a) => {
+    n((o) => {
+      const i = new Set(o);
+      return i.has(a) ? i.delete(a) : i.add(a), i;
     });
-  }, []), s = X(
-    (r) => e.has(r),
+  }, []), r = A(
+    (a) => e.has(a),
     [e]
   );
-  return { collapsedIds: e, toggleCollapse: a, isCollapsed: s };
+  return { collapsedIds: e, toggleCollapse: s, isCollapsed: r };
 }
-function It() {
-  const t = U(null), [e, n] = nt(0), a = X(() => {
+function Ht() {
+  const t = q(null), [e, n] = nt(0), s = A(() => {
     t.current && n(t.current.scrollLeft);
   }, []);
-  return { containerRef: t, scrollLeft: e, handleScroll: a };
+  return { containerRef: t, scrollLeft: e, handleScroll: s };
 }
-const St = 3, Z = 10;
-function Nt(t) {
+const Pt = 3, K = 10;
+function At(t) {
   const {
     svgRef: e,
     ghostRectRef: n,
-    bars: a,
-    timeRange: s,
-    columnWidth: r,
-    viewMode: i,
-    readOnly: o = !1,
+    bars: s,
+    timeRange: r,
+    columnWidth: a,
+    viewMode: o,
+    readOnly: i = !1,
     disabledTaskIds: c,
     onTaskMove: l,
-    onTaskResize: m,
-    onProgressChange: T
-  } = t, [B, w] = nt(!1), v = U(null), C = U(null), Y = U(!1), k = X(
-    (p) => a.find((f) => f.taskId === p),
-    [a]
-  ), A = X(
-    (p) => {
-      var y;
-      const f = ((y = e.current) == null ? void 0 : y.getBoundingClientRect().left) ?? 0;
-      return p - f;
+    onTaskResize: y,
+    onProgressChange: $
+  } = t, [P, D] = nt(!1), w = q(null), v = q(null), E = q(!1), L = A(
+    (f) => s.find((p) => p.taskId === f),
+    [s]
+  ), z = A(
+    (f) => {
+      var m;
+      const p = ((m = e.current) == null ? void 0 : m.getBoundingClientRect().left) ?? 0;
+      return f - p;
     },
     [e]
-  ), g = X(
-    (p, f, y) => {
-      if (o || c != null && c.has(p)) return;
-      const d = k(p);
-      d && (y.target.setPointerCapture(y.pointerId), y.preventDefault(), C.current = {
-        startClientX: y.clientX,
+  ), h = A(
+    (f, p, m) => {
+      if (i || c != null && c.has(f)) return;
+      const d = L(f);
+      d && (m.target.setPointerCapture(m.pointerId), m.preventDefault(), v.current = {
+        startClientX: m.clientX,
         originalBar: { ...d },
-        mode: f,
-        taskId: p,
+        mode: p,
+        taskId: f,
         activated: !1
-      }, Y.current = !1);
+      }, E.current = !1);
     },
-    [o, c, k]
-  ), D = X(
-    (p) => {
-      const f = C.current;
-      if (!f) return;
-      const y = p.clientX - f.startClientX, { originalBar: d, mode: L, taskId: R } = f;
-      if (!f.activated) {
-        if (Math.abs(y) < St) return;
-        if (f.activated = !0, Y.current = !0, w(!0), v.current = {
+    [i, c, L]
+  ), I = A(
+    (f) => {
+      const p = v.current;
+      if (!p) return;
+      const m = f.clientX - p.startClientX, { originalBar: d, mode: T, taskId: R } = p;
+      if (!p.activated) {
+        if (Math.abs(m) < Pt) return;
+        if (p.activated = !0, E.current = !0, D(!0), w.current = {
           taskId: R,
-          mode: L,
+          mode: T,
           originalBar: d,
           ghostBar: { ...d },
           ghostProgress: d.progress
-        }, L !== "progress" && n.current) {
+        }, T !== "progress" && n.current) {
           const x = n.current;
           x.style.display = "", x.setAttribute("x", String(d.x)), x.setAttribute("y", String(d.y)), x.setAttribute("width", String(d.width)), x.setAttribute("height", String(d.height)), x.setAttribute("fill", d.color);
         }
       }
-      const H = v.current;
-      if (!H) return;
-      const I = { ...H.originalBar };
-      let S = H.originalBar.progress;
-      switch (L) {
+      const j = w.current;
+      if (!j) return;
+      const S = { ...j.originalBar };
+      let _ = j.originalBar.progress;
+      switch (T) {
         case "move":
-          I.x = d.x + y;
+          S.x = d.x + m;
           break;
         case "resize-left": {
-          const x = d.x + y, b = d.width - y;
-          b >= Z ? (I.x = x, I.width = b) : (I.x = d.x + d.width - Z, I.width = Z);
+          const x = d.x + m, M = d.width - m;
+          M >= K ? (S.x = x, S.width = M) : (S.x = d.x + d.width - K, S.width = K);
           break;
         }
         case "resize-right": {
-          const x = d.width + y;
-          I.width = Math.max(x, Z);
+          const x = d.width + m;
+          S.width = Math.max(x, K);
           break;
         }
         case "progress": {
-          const j = (A(p.clientX) - d.x) / d.width * 100;
-          S = Math.round(Math.max(0, Math.min(100, j)));
+          const Q = (z(f.clientX) - d.x) / d.width * 100;
+          _ = Math.round(Math.max(0, Math.min(100, Q)));
           break;
         }
       }
-      if (v.current = { ...H, ghostBar: I, ghostProgress: S }, L !== "progress" && n.current) {
+      if (w.current = { ...j, ghostBar: S, ghostProgress: _ }, T !== "progress" && n.current) {
         const x = n.current;
-        x.setAttribute("x", String(I.x)), x.setAttribute("y", String(I.y)), x.setAttribute("width", String(I.width)), x.setAttribute("height", String(I.height));
+        x.setAttribute("x", String(S.x)), x.setAttribute("y", String(S.y)), x.setAttribute("width", String(S.width)), x.setAttribute("height", String(S.height));
       }
-      if (L === "progress" && e.current) {
+      if (T === "progress" && e.current) {
         const x = e.current.querySelector(
           `[data-progress-task="${R}"]`
-        ), b = e.current.querySelector(
+        ), M = e.current.querySelector(
           `[data-progress-handle="${R}"]`
-        ), j = d.width * (S / 100);
+        ), Q = d.width * (_ / 100);
         if (x) {
-          const V = d.width - j;
+          const J = d.width - Q;
           x.setAttribute(
             "clip-path",
-            `inset(0 ${V}px 0 0)`
-          ), x.style.display = S > 0 ? "" : "none";
+            `inset(0 ${J}px 0 0)`
+          ), x.style.display = _ > 0 ? "" : "none";
         }
-        b && b.setAttribute(
+        M && M.setAttribute(
           "cx",
-          String(d.x + j)
+          String(d.x + Q)
         );
       }
     },
-    [A, n, e]
-  ), E = X(
-    (p) => {
-      const f = C.current;
-      if (!f || (p.target.releasePointerCapture(p.pointerId), C.current = null, !f.activated))
+    [z, n, e]
+  ), b = A(
+    (f) => {
+      const p = v.current;
+      if (!p || (f.target.releasePointerCapture(f.pointerId), v.current = null, !p.activated))
         return;
-      const y = v.current;
-      if (v.current = null, n.current && (n.current.style.display = "none"), w(!1), !y) return;
-      const { mode: d, taskId: L, ghostBar: R, ghostProgress: H } = y;
+      const m = w.current;
+      if (w.current = null, n.current && (n.current.style.display = "none"), D(!1), !m) return;
+      const { mode: d, taskId: T, ghostBar: R, ghostProgress: j } = m;
       queueMicrotask(() => {
         if (d === "progress")
-          T == null || T({ taskId: L, progress: H });
+          $ == null || $({ taskId: T, progress: j });
         else {
-          const I = it(
-            ot(R.x, s, r, i),
-            i
-          ), S = it(
-            ot(R.x + R.width, s, r, i),
-            i
+          const S = it(
+            ot(R.x, r, a, o),
+            o
+          ), _ = it(
+            ot(R.x + R.width, r, a, o),
+            o
           );
-          d === "move" ? l == null || l({ taskId: L, start: I, end: S }) : m == null || m({ taskId: L, start: I, end: S });
+          d === "move" ? l == null || l({ taskId: T, start: S, end: _ }) : y == null || y({ taskId: T, start: S, end: _ });
         }
       });
     },
-    [s, r, i, l, m, T, n]
-  ), G = X(
-    (p, f) => g(p, "move", f),
-    [g]
-  ), $ = X(
-    (p, f) => g(p, "resize-left", f),
-    [g]
-  ), N = X(
-    (p, f) => g(p, "resize-right", f),
-    [g]
-  ), M = X(
-    (p, f) => g(p, "progress", f),
-    [g]
-  ), P = X(() => {
-    Y.current = !1;
+    [r, a, o, l, y, $, n]
+  ), G = A(
+    (f, p) => h(f, "move", p),
+    [h]
+  ), k = A(
+    (f, p) => h(f, "resize-left", p),
+    [h]
+  ), N = A(
+    (f, p) => h(f, "resize-right", p),
+    [h]
+  ), C = A(
+    (f, p) => h(f, "progress", p),
+    [h]
+  ), O = A(() => {
+    E.current = !1;
   }, []);
   return {
-    isDragging: B,
-    didDrag: Y.current,
-    clearDidDrag: P,
+    isDragging: P,
+    didDrag: E.current,
+    clearDidDrag: O,
     handleMoveStart: G,
-    handleResizeLeftStart: $,
+    handleResizeLeftStart: k,
     handleResizeRightStart: N,
-    handleProgressStart: M,
-    handlePointerMove: D,
-    handlePointerUp: E
+    handleProgressStart: C,
+    handlePointerMove: I,
+    handlePointerUp: b
   };
 }
-function Tt({
+function Et({
   columns: t,
   columnWidth: e,
   height: n,
-  scrollLeft: a,
-  taskListWidth: s
+  scrollLeft: s,
+  taskListWidth: r
 }) {
-  return /* @__PURE__ */ _("div", { className: "gantt-header", style: { height: n }, children: [
-    s > 0 && /* @__PURE__ */ h(
+  return /* @__PURE__ */ F("div", { className: "gantt-header", style: { height: n }, children: [
+    r > 0 && /* @__PURE__ */ g(
       "div",
       {
         className: "gantt-header-cell gantt-header-cell--task-list",
-        style: { width: s, height: n },
+        style: { width: r, height: n },
         children: "Tasks"
       }
     ),
-    /* @__PURE__ */ h("div", { className: "gantt-header-dates", style: { overflow: "hidden", flex: 1 }, children: /* @__PURE__ */ h(
+    /* @__PURE__ */ g("div", { className: "gantt-header-dates", style: { overflow: "hidden", flex: 1 }, children: /* @__PURE__ */ g(
       "div",
       {
         style: {
           display: "flex",
-          transform: `translateX(-${a}px)`
+          transform: `translateX(-${s}px)`
         },
-        children: t.map((r) => /* @__PURE__ */ h(
+        children: t.map((a) => /* @__PURE__ */ g(
           "div",
           {
             className: "gantt-header-cell",
             style: { width: e, height: n },
-            children: r.label
+            children: a.label
           },
-          r.index
+          a.index
         ))
       }
     ) })
   ] });
 }
-const Mt = 60, tt = 8, vt = 5;
-function Ct({
+const Ct = 60, tt = 8, Bt = 5;
+function Ot({
   bar: t,
   readOnly: e,
   disabled: n,
-  onClick: a,
-  onDoubleClick: s,
-  onMoveStart: r,
-  onResizeLeftStart: i,
-  onResizeRightStart: o,
+  onClick: s,
+  onDoubleClick: r,
+  onMoveStart: a,
+  onResizeLeftStart: o,
+  onResizeRightStart: i,
   onProgressStart: c,
   didDrag: l,
-  clearDidDrag: m
+  clearDidDrag: y
 }) {
-  const B = t.width * (t.progress / 100), w = !e && !n && !t.isSummary, v = (k) => {
+  const P = t.width * (t.progress / 100), D = !e && !n && !t.isSummary, w = (L) => {
     if (l) {
-      m == null || m(), k.stopPropagation();
+      y == null || y(), L.stopPropagation();
       return;
     }
-    a == null || a(t.taskId);
-  }, C = () => {
-    l || s == null || s(t.taskId);
-  }, Y = [
+    s == null || s(t.taskId);
+  }, v = () => {
+    l || r == null || r(t.taskId);
+  }, E = [
     "gantt-bar-group",
-    w && "gantt-bar-group--interactive",
+    D && "gantt-bar-group--interactive",
     n && "gantt-bar-group--disabled",
     t.isSummary && "gantt-bar-group--summary"
   ].filter(Boolean).join(" ");
-  return /* @__PURE__ */ _(
+  return /* @__PURE__ */ F(
     "g",
     {
-      className: Y,
-      onClick: v,
-      onDoubleClick: C,
+      className: E,
+      onClick: w,
+      onDoubleClick: v,
       children: [
-        /* @__PURE__ */ h(
+        /* @__PURE__ */ g(
           "rect",
           {
             className: "gantt-bar-bg",
@@ -451,10 +451,10 @@ function Ct({
             rx: 4,
             ry: 4,
             fill: t.color,
-            onPointerDown: w ? (k) => r == null ? void 0 : r(t.taskId, k) : void 0
+            onPointerDown: D ? (L) => a == null ? void 0 : a(t.taskId, L) : void 0
           }
         ),
-        t.progress > 0 && /* @__PURE__ */ h(
+        t.progress > 0 && /* @__PURE__ */ g(
           "rect",
           {
             className: "gantt-bar-progress",
@@ -466,10 +466,10 @@ function Ct({
             rx: 4,
             ry: 4,
             fill: "var(--gantt-bar-progress-fill)",
-            clipPath: `inset(0 ${t.width - B}px 0 0)`
+            clipPath: `inset(0 ${t.width - P}px 0 0)`
           }
         ),
-        t.width > Mt && /* @__PURE__ */ h(
+        t.width > Ct && /* @__PURE__ */ g(
           "text",
           {
             className: "gantt-bar-label",
@@ -478,8 +478,8 @@ function Ct({
             children: t.name
           }
         ),
-        w && /* @__PURE__ */ _(dt, { children: [
-          /* @__PURE__ */ h(
+        D && /* @__PURE__ */ F($t, { children: [
+          /* @__PURE__ */ g(
             "rect",
             {
               className: "gantt-bar-resize-handle",
@@ -489,12 +489,12 @@ function Ct({
               height: t.height,
               rx: 4,
               ry: 4,
-              onPointerDown: (k) => {
-                k.stopPropagation(), i == null || i(t.taskId, k);
+              onPointerDown: (L) => {
+                L.stopPropagation(), o == null || o(t.taskId, L);
               }
             }
           ),
-          /* @__PURE__ */ h(
+          /* @__PURE__ */ g(
             "rect",
             {
               className: "gantt-bar-resize-handle",
@@ -504,21 +504,21 @@ function Ct({
               height: t.height,
               rx: 4,
               ry: 4,
-              onPointerDown: (k) => {
-                k.stopPropagation(), o == null || o(t.taskId, k);
+              onPointerDown: (L) => {
+                L.stopPropagation(), i == null || i(t.taskId, L);
               }
             }
           ),
-          /* @__PURE__ */ h(
+          /* @__PURE__ */ g(
             "circle",
             {
               className: "gantt-bar-progress-handle",
               "data-progress-handle": t.taskId,
-              cx: t.x + B,
+              cx: t.x + P,
               cy: t.y + t.height / 2,
-              r: vt,
-              onPointerDown: (k) => {
-                k.stopPropagation(), c == null || c(t.taskId, k);
+              r: Bt,
+              onPointerDown: (L) => {
+                L.stopPropagation(), c == null || c(t.taskId, L);
               }
             }
           )
@@ -527,9 +527,9 @@ function Ct({
     }
   );
 }
-const Lt = 16;
-function Xt({ expanded: t }) {
-  return /* @__PURE__ */ h(
+const bt = 16;
+function _t({ expanded: t }) {
+  return /* @__PURE__ */ g(
     "svg",
     {
       className: `gantt-chevron ${t ? "gantt-chevron--expanded" : ""}`,
@@ -537,330 +537,440 @@ function Xt({ expanded: t }) {
       height: "12",
       viewBox: "0 0 12 12",
       "aria-hidden": "true",
-      children: /* @__PURE__ */ h("path", { d: "M4 2l4 4-4 4", fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinecap: "round", strokeLinejoin: "round" })
+      children: /* @__PURE__ */ g("path", { d: "M4 2l4 4-4 4", fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinecap: "round", strokeLinejoin: "round" })
     }
   );
 }
-function Yt({
+function Rt({
   rows: t,
   width: e,
   rowHeight: n,
-  totalHeight: a,
-  onToggleCollapse: s
+  totalHeight: s,
+  onToggleCollapse: r
 }) {
-  return e <= 0 ? null : /* @__PURE__ */ h(
+  return e <= 0 ? null : /* @__PURE__ */ g(
     "div",
     {
       className: "gantt-task-list",
-      style: { width: e, minHeight: a },
+      style: { width: e, minHeight: s },
       role: "list",
-      children: t.map((r) => {
-        const i = r.type === "group" ? r.groupId : r.taskId, o = r.level * Lt;
-        return /* @__PURE__ */ _(
+      children: t.map((a) => {
+        const o = a.type === "group" ? a.groupId : a.taskId, i = a.level * bt;
+        return /* @__PURE__ */ F(
           "div",
           {
-            className: `gantt-task-list-row ${r.type === "group" ? "gantt-task-list-row--group" : ""}`,
-            style: { height: n, cursor: r.hasChildren ? "pointer" : void 0 },
-            role: r.hasChildren ? "button" : "listitem",
-            "aria-expanded": r.hasChildren ? !r.isCollapsed : void 0,
-            "aria-label": r.hasChildren ? r.isCollapsed ? `Expand ${r.name}` : `Collapse ${r.name}` : void 0,
-            onClick: r.hasChildren ? () => s(i) : void 0,
+            className: `gantt-task-list-row ${a.type === "group" ? "gantt-task-list-row--group" : ""}`,
+            style: { height: n, cursor: a.hasChildren ? "pointer" : void 0 },
+            role: a.hasChildren ? "button" : "listitem",
+            "aria-expanded": a.hasChildren ? !a.isCollapsed : void 0,
+            "aria-label": a.hasChildren ? a.isCollapsed ? `Expand ${a.name}` : `Collapse ${a.name}` : void 0,
+            onClick: a.hasChildren ? () => r(o) : void 0,
             children: [
-              r.type === "group" && r.color && /* @__PURE__ */ h(
+              a.type === "group" && a.color && /* @__PURE__ */ g(
                 "div",
                 {
                   className: "gantt-task-list-accent",
-                  style: { backgroundColor: r.color }
+                  style: { backgroundColor: a.color }
                 }
               ),
-              /* @__PURE__ */ h("div", { style: { width: o, flexShrink: 0 } }),
-              r.hasChildren ? /* @__PURE__ */ h("span", { className: "gantt-task-list-toggle", children: /* @__PURE__ */ h(Xt, { expanded: !r.isCollapsed }) }) : /* @__PURE__ */ h("div", { className: "gantt-task-list-toggle-spacer" }),
-              /* @__PURE__ */ h("span", { className: "gantt-task-list-name", title: r.name, children: r.name })
+              /* @__PURE__ */ g("div", { style: { width: i, flexShrink: 0 } }),
+              a.hasChildren ? /* @__PURE__ */ g("span", { className: "gantt-task-list-toggle", children: /* @__PURE__ */ g(_t, { expanded: !a.isCollapsed }) }) : /* @__PURE__ */ g("div", { className: "gantt-task-list-toggle-spacer" }),
+              /* @__PURE__ */ g("span", { className: "gantt-task-list-name", title: a.name, children: a.name })
             ]
           },
-          r.id
+          a.id
         );
       })
     }
   );
 }
-const F = 5, Q = 12;
-function Pt(t, e = 4) {
-  const n = e, a = [
-    `${t.targetX - F},${t.targetY - F}`,
-    `${t.targetX},${t.targetY}`,
-    `${t.targetX - F},${t.targetY + F}`
-  ].join(" "), s = t.targetX - F;
-  return t.targetX - t.sourceX > Q * 2 ? At(t, s, n, a) : Rt(t, s, n, a);
+const B = 5, H = 12;
+function Wt(t, e = 4) {
+  const n = t.sourceLeft + t.sourceWidth, s = t.targetLeft + t.targetWidth, r = t.sourceTop + t.sourceHeight / 2, a = t.targetTop + t.targetHeight / 2;
+  switch (t.type) {
+    case "FS":
+      return Ft(t, n, r, a, e);
+    case "SS":
+      return Gt(t, r, a, e);
+    case "FF":
+      return jt(n, s, r, a, e);
+    case "SF":
+      return Qt(t, s, r, a, e);
+  }
 }
-function At(t, e, n, a) {
-  const s = t.sourceX + Q, r = t.targetY - t.sourceY;
-  if (Math.abs(r) < 1)
-    return {
-      path: `M ${t.sourceX},${t.sourceY} L ${e},${t.targetY}`,
-      arrowHead: a
-    };
-  const i = Math.min(n, Math.abs(r) / 2, Q / 2), o = r > 0 ? 1 : -1;
+function ct(t, e) {
+  return [
+    `${t - B},${e - B}`,
+    `${t},${e}`,
+    `${t - B},${e + B}`
+  ].join(" ");
+}
+function lt(t, e) {
+  return [
+    `${t + B},${e - B}`,
+    `${t},${e}`,
+    `${t + B},${e + B}`
+  ].join(" ");
+}
+function Ft(t, e, n, s, r) {
+  const a = ct(t.targetLeft, s), o = t.targetLeft - B;
+  if (t.targetLeft - e > H * 2)
+    return Ut(e, n, o, s, e + H, r, a);
+  const i = ht(t);
+  return gt(
+    e,
+    n,
+    "right",
+    o,
+    s,
+    "left",
+    e + H,
+    t.targetLeft - H,
+    i,
+    r,
+    a
+  );
+}
+function Gt(t, e, n, s) {
+  const r = ct(t.targetLeft, n), a = t.targetLeft - B, o = Math.min(t.sourceLeft, t.targetLeft) - H;
+  return dt(
+    t.sourceLeft,
+    e,
+    "left",
+    a,
+    n,
+    "right",
+    o,
+    s,
+    r
+  );
+}
+function jt(t, e, n, s, r) {
+  const a = lt(e, s), o = e + B, i = Math.max(t, e) + H;
+  return dt(
+    t,
+    n,
+    "right",
+    o,
+    s,
+    "left",
+    i,
+    r,
+    a
+  );
+}
+function Qt(t, e, n, s, r) {
+  const a = lt(e, s), o = e + B;
+  if (t.sourceLeft - e > H * 2)
+    return zt(t.sourceLeft, n, o, s, t.sourceLeft - H, r, a);
+  const i = ht(t);
+  return gt(
+    t.sourceLeft,
+    n,
+    "left",
+    o,
+    s,
+    "right",
+    t.sourceLeft - H,
+    e + H,
+    i,
+    r,
+    a
+  );
+}
+function ht(t) {
+  const e = t.sourceTop + t.sourceHeight, n = t.targetTop + t.targetHeight;
+  return Math.max(e, n) + t.rowHeight * 0.4;
+}
+function Ut(t, e, n, s, r, a, o) {
+  const i = s - e;
+  if (Math.abs(i) < 1)
+    return { path: `M ${t},${e} L ${n},${s}`, arrowHead: o };
+  const c = Math.min(a, Math.abs(i) / 2, H / 2), l = i > 0 ? 1 : -1;
   return { path: [
-    `M ${t.sourceX},${t.sourceY}`,
-    // Horizontal to first turn
-    `L ${s - i},${t.sourceY}`,
-    // Round corner: turn from horizontal to vertical
-    `Q ${s},${t.sourceY} ${s},${t.sourceY + i * o}`,
-    // Vertical segment
-    `L ${s},${t.targetY - i * o}`,
-    // Round corner: turn from vertical to horizontal
-    `Q ${s},${t.targetY} ${s + i},${t.targetY}`,
-    // Horizontal to arrowhead
-    `L ${e},${t.targetY}`
-  ].join(" "), arrowHead: a };
+    `M ${t},${e}`,
+    `L ${r - c},${e}`,
+    `Q ${r},${e} ${r},${e + c * l}`,
+    `L ${r},${s - c * l}`,
+    `Q ${r},${s} ${r + c},${s}`,
+    `L ${n},${s}`
+  ].join(" "), arrowHead: o };
 }
-function Rt(t, e, n, a) {
-  const s = t.sourceX + Q, r = t.targetX - Q - F, i = t.sourceTop + t.sourceHeight, o = t.targetTop + t.targetHeight, c = Math.max(i, o) + t.rowHeight * 0.4, l = Math.min(n, Q / 2);
+function zt(t, e, n, s, r, a, o) {
+  const i = s - e;
+  if (Math.abs(i) < 1)
+    return { path: `M ${t},${e} L ${n},${s}`, arrowHead: o };
+  const c = Math.min(a, Math.abs(i) / 2, H / 2), l = i > 0 ? 1 : -1;
   return { path: [
-    `M ${t.sourceX},${t.sourceY}`,
-    // Right from source
-    `L ${s - l},${t.sourceY}`,
-    `Q ${s},${t.sourceY} ${s},${t.sourceY + l}`,
-    // Down to detour level
-    `L ${s},${c - l}`,
-    `Q ${s},${c} ${s - l},${c}`,
-    // Left to target column
-    `L ${r + l},${c}`,
-    `Q ${r},${c} ${r},${c - l}`,
-    // Up to target row
-    `L ${r},${t.targetY + l}`,
-    `Q ${r},${t.targetY} ${r + l},${t.targetY}`,
-    // Right to arrowhead
-    `L ${e},${t.targetY}`
-  ].join(" "), arrowHead: a };
+    `M ${t},${e}`,
+    `L ${r + c},${e}`,
+    `Q ${r},${e} ${r},${e + c * l}`,
+    `L ${r},${s - c * l}`,
+    `Q ${r},${s} ${r - c},${s}`,
+    `L ${n},${s}`
+  ].join(" "), arrowHead: o };
 }
-function Bt({ tasks: t, bars: e, rowHeight: n }) {
-  const a = et(() => {
-    var i;
-    const s = /* @__PURE__ */ new Map();
+function dt(t, e, n, s, r, a, o, i, c) {
+  const l = r - e, y = Math.min(i, Math.max(Math.abs(l) / 2, 1), H / 2), $ = l >= 0 ? 1 : -1, P = n === "left" ? -1 : 1, D = a === "left" ? 1 : -1;
+  return { path: [
+    `M ${t},${e}`,
+    // Horizontal from start toward the column (stop short to leave room for curve)
+    `L ${o - P * y},${e}`,
+    // Curve into vertical
+    `Q ${o},${e} ${o},${e + y * $}`,
+    // Vertical segment to target row
+    `L ${o},${r - y * $}`,
+    // Curve out of vertical
+    `Q ${o},${r} ${o + D * y},${r}`,
+    // Horizontal to end
+    `L ${s},${r}`
+  ].join(" "), arrowHead: c };
+}
+function gt(t, e, n, s, r, a, o, i, c, l, y) {
+  const $ = Math.min(l, H / 2), P = n === "left" ? -1 : 1, D = a === "left" ? 1 : -1, w = i > o ? 1 : -1;
+  return { path: [
+    `M ${t},${e}`,
+    // Horizontal from source anchor to startColX
+    `L ${o - P * $},${e}`,
+    // Curve into vertical (going down toward detour)
+    `Q ${o},${e} ${o},${e + $}`,
+    // Vertical down to detour row
+    `L ${o},${c - $}`,
+    // Curve into horizontal toward endColX
+    `Q ${o},${c} ${o + w * $},${c}`,
+    // Horizontal across detour row
+    `L ${i - w * $},${c}`,
+    // Curve into vertical (going up toward target row)
+    `Q ${i},${c} ${i},${c - $}`,
+    // Vertical up to target row
+    `L ${i},${r + $}`,
+    // Curve into horizontal toward target anchor
+    `Q ${i},${r} ${i + D * $},${r}`,
+    // Final horizontal to arrowhead
+    `L ${s},${r}`
+  ].join(" "), arrowHead: y };
+}
+function qt({ dependencies: t, bars: e, rowHeight: n }) {
+  const s = et(() => {
+    const r = /* @__PURE__ */ new Map();
     for (const o of e)
-      s.set(o.taskId, o);
-    const r = [];
+      r.set(o.taskId, o);
+    const a = [];
     for (const o of t) {
-      if (!((i = o.dependencies) != null && i.length)) continue;
-      const c = s.get(o.id);
-      if (c)
-        for (const l of o.dependencies) {
-          const m = s.get(l);
-          if (!m) continue;
-          const T = Pt({
-            sourceX: m.x + m.width,
-            sourceY: m.y + m.height / 2,
-            targetX: c.x,
-            targetY: c.y + c.height / 2,
-            rowHeight: n,
-            sourceWidth: m.width,
-            sourceTop: m.y,
-            targetTop: c.y,
-            sourceHeight: m.height,
-            targetHeight: c.height
-          });
-          r.push({
-            key: `${l}->${o.id}`,
-            path: T.path,
-            arrowHead: T.arrowHead
-          });
-        }
+      const i = r.get(o.fromTaskId), c = r.get(o.toTaskId);
+      if (!i || !c) continue;
+      const l = Wt({
+        sourceLeft: i.x,
+        sourceTop: i.y,
+        sourceWidth: i.width,
+        sourceHeight: i.height,
+        targetLeft: c.x,
+        targetTop: c.y,
+        targetWidth: c.width,
+        targetHeight: c.height,
+        rowHeight: n,
+        type: o.type
+      });
+      a.push({
+        key: `${o.fromTaskId}->${o.toTaskId}:${o.type}`,
+        path: l.path,
+        arrowHead: l.arrowHead
+      });
     }
-    return r;
+    return a;
   }, [t, e, n]);
-  return a.length === 0 ? null : /* @__PURE__ */ h("g", { className: "gantt-dependencies-layer", children: a.map((s) => /* @__PURE__ */ _("g", { children: [
-    /* @__PURE__ */ h("path", { className: "gantt-arrow-path", d: s.path }),
-    /* @__PURE__ */ h("polygon", { className: "gantt-arrow-head", points: s.arrowHead })
-  ] }, s.key)) });
+  return s.length === 0 ? null : /* @__PURE__ */ g("g", { className: "gantt-dependencies-layer", children: s.map((r) => /* @__PURE__ */ F("g", { children: [
+    /* @__PURE__ */ g("path", { className: "gantt-arrow-path", d: r.path }),
+    /* @__PURE__ */ g("polygon", { className: "gantt-arrow-head", points: r.arrowHead })
+  ] }, r.key)) });
 }
-const Et = {
+const Zt = {
   day: 50,
   week: 80,
   month: 120
-}, Ht = 50, bt = 40;
-function Gt(t) {
+}, Vt = 50, Jt = 40, Kt = 0.8;
+function te(t) {
   const {
     tasks: e,
-    groups: n = [],
-    viewMode: a = "week",
-    taskListWidth: s = 0,
-    rowHeight: r = Ht,
+    dependencies: n = [],
+    groups: s = [],
+    viewMode: r = "week",
+    taskListWidth: a = 0,
+    rowHeight: o = Vt,
     columnWidth: i,
-    readOnly: o = !1,
-    showDependencies: c = !0,
-    showTodayMarker: l = !0,
-    theme: m,
-    locale: T,
-    initialCollapsed: B,
+    readOnly: c = !1,
+    showDependencies: l = !0,
+    showTodayMarker: y = !0,
+    theme: $,
+    locale: P,
+    initialCollapsed: D,
     onTaskClick: w,
     onTaskDoubleClick: v,
-    onTaskMove: C,
-    onTaskResize: Y,
-    onProgressChange: k
-  } = t, A = i ?? Et[a], { collapsedIds: g, toggleCollapse: D } = wt(B), { containerRef: E, scrollLeft: G, handleScroll: $ } = It(), N = Dt(
+    onTaskMove: E,
+    onTaskResize: L,
+    onProgressChange: z
+  } = t, h = i ?? Zt[r], { collapsedIds: I, toggleCollapse: b } = vt(D), { containerRef: G, scrollLeft: k, handleScroll: N } = Ht(), C = Nt(
     e,
-    n,
-    a,
+    s,
     r,
-    A,
-    g,
-    T
-  ), { rows: M, bars: P, columns: p, timeRange: f, totalWidth: y, totalHeight: d } = N, L = (u) => {
+    o,
+    h,
+    I,
+    P
+  ), { rows: O, bars: f, columns: p, timeRange: m, totalWidth: d, totalHeight: T } = C, R = T + o * Kt, j = (u) => {
     if (u.startsWith("group-summary-")) {
-      const lt = u.replace("group-summary-", "");
-      D(lt);
+      const mt = u.replace("group-summary-", "");
+      b(mt);
     } else
       w == null || w(u);
-  }, R = U(null), H = U(null), I = et(
+  }, S = q(null), _ = q(null), x = et(
     () => new Set(e.filter((u) => u.disabled).map((u) => u.id)),
     [e]
-  ), S = Nt({
-    svgRef: R,
-    ghostRectRef: H,
-    bars: P,
-    timeRange: f,
-    columnWidth: A,
-    viewMode: a,
-    readOnly: o,
-    disabledTaskIds: I,
-    onTaskMove: C,
-    onTaskResize: Y,
-    onProgressChange: k
-  }), x = /* @__PURE__ */ new Date(), b = q(x, f, A, a), j = l && x >= f.start && x <= f.end, V = m ? Object.fromEntries(
-    Object.entries(m).filter(([, u]) => u !== void 0)
-  ) : {}, ct = [
+  ), M = At({
+    svgRef: S,
+    ghostRectRef: _,
+    bars: f,
+    timeRange: m,
+    columnWidth: h,
+    viewMode: r,
+    readOnly: c,
+    disabledTaskIds: x,
+    onTaskMove: E,
+    onTaskResize: L,
+    onProgressChange: z
+  }), Q = /* @__PURE__ */ new Date(), J = V(Q, m, h, r), ut = y && Q >= m.start && Q <= m.end, ft = $ ? Object.fromEntries(
+    Object.entries($).filter(([, u]) => u !== void 0)
+  ) : {}, pt = [
     "gantt-core",
-    S.isDragging && "gantt-core--dragging"
+    M.isDragging && "gantt-core--dragging"
   ].filter(Boolean).join(" ");
-  return /* @__PURE__ */ _("div", { className: ct, style: V, children: [
-    /* @__PURE__ */ h(
-      Tt,
+  return /* @__PURE__ */ F("div", { className: pt, style: ft, children: [
+    /* @__PURE__ */ g(
+      Et,
       {
         columns: p,
-        columnWidth: A,
-        height: bt,
-        scrollLeft: G,
-        taskListWidth: s
+        columnWidth: h,
+        height: Jt,
+        scrollLeft: k,
+        taskListWidth: a
       }
     ),
-    /* @__PURE__ */ h("div", { className: "gantt-body", children: /* @__PURE__ */ h(
+    /* @__PURE__ */ g("div", { className: "gantt-body", children: /* @__PURE__ */ g(
       "div",
       {
-        ref: E,
+        ref: G,
         className: "gantt-timeline-container",
-        onScroll: $,
-        children: /* @__PURE__ */ _("div", { className: "gantt-body-inner", style: { width: s + y }, children: [
-          /* @__PURE__ */ h(
-            Yt,
+        onScroll: N,
+        children: /* @__PURE__ */ F("div", { className: "gantt-body-inner", style: { width: a + d }, children: [
+          /* @__PURE__ */ g(
+            Rt,
             {
-              rows: M,
-              width: s,
-              rowHeight: r,
-              totalHeight: d,
-              onToggleCollapse: D
+              rows: O,
+              width: a,
+              rowHeight: o,
+              totalHeight: T,
+              onToggleCollapse: b
             }
           ),
-          /* @__PURE__ */ _(
+          /* @__PURE__ */ F(
             "svg",
             {
-              ref: R,
-              className: `gantt-svg${o ? "" : " gantt-svg--interactive"}`,
-              width: y,
-              height: d,
-              onPointerMove: S.handlePointerMove,
-              onPointerUp: S.handlePointerUp,
+              ref: S,
+              className: `gantt-svg${c ? "" : " gantt-svg--interactive"}`,
+              width: d,
+              height: R,
+              onPointerMove: M.handlePointerMove,
+              onPointerUp: M.handlePointerUp,
               children: [
-                /* @__PURE__ */ _("g", { className: "gantt-grid-layer", children: [
-                  p.filter((u) => u.isWeekend).map((u) => /* @__PURE__ */ h(
+                /* @__PURE__ */ F("g", { className: "gantt-grid-layer", children: [
+                  p.filter((u) => u.isWeekend).map((u) => /* @__PURE__ */ g(
                     "rect",
                     {
                       className: "gantt-weekend-rect",
                       x: u.x,
                       y: 0,
-                      width: A,
-                      height: d
+                      width: h,
+                      height: T
                     },
                     `weekend-${u.index}`
                   )),
-                  p.map((u) => /* @__PURE__ */ h(
+                  p.map((u) => /* @__PURE__ */ g(
                     "line",
                     {
                       className: "gantt-grid-line",
                       x1: u.x,
                       y1: 0,
                       x2: u.x,
-                      y2: d
+                      y2: T
                     },
                     `line-${u.index}`
                   )),
-                  M.map((u) => /* @__PURE__ */ h(
+                  O.map((u) => /* @__PURE__ */ g(
                     "line",
                     {
                       className: "gantt-grid-line",
                       x1: 0,
                       y1: u.y + u.height,
-                      x2: y,
+                      x2: d,
                       y2: u.y + u.height
                     },
                     `hline-${u.id}`
                   )),
-                  M.filter((u) => u.type === "group").map((u) => /* @__PURE__ */ h(
+                  O.filter((u) => u.type === "group").map((u) => /* @__PURE__ */ g(
                     "rect",
                     {
                       className: "gantt-group-row",
                       x: 0,
                       y: u.y,
-                      width: y,
+                      width: d,
                       height: u.height
                     },
                     `group-bg-${u.id}`
                   ))
                 ] }),
-                c && /* @__PURE__ */ h(
-                  Bt,
+                l && /* @__PURE__ */ g(
+                  qt,
                   {
-                    tasks: e,
-                    bars: P,
-                    rowHeight: r
+                    dependencies: n,
+                    bars: f,
+                    rowHeight: o
                   }
                 ),
-                /* @__PURE__ */ h("g", { className: "gantt-bars-layer", children: P.map((u) => /* @__PURE__ */ h(
-                  Ct,
+                /* @__PURE__ */ g("g", { className: "gantt-bars-layer", children: f.map((u) => /* @__PURE__ */ g(
+                  Ot,
                   {
                     bar: u,
-                    readOnly: o,
-                    disabled: I.has(u.taskId),
-                    onClick: L,
+                    readOnly: c,
+                    disabled: x.has(u.taskId),
+                    onClick: j,
                     onDoubleClick: v,
-                    onMoveStart: S.handleMoveStart,
-                    onResizeLeftStart: S.handleResizeLeftStart,
-                    onResizeRightStart: S.handleResizeRightStart,
-                    onProgressStart: S.handleProgressStart,
-                    didDrag: S.didDrag,
-                    clearDidDrag: S.clearDidDrag
+                    onMoveStart: M.handleMoveStart,
+                    onResizeLeftStart: M.handleResizeLeftStart,
+                    onResizeRightStart: M.handleResizeRightStart,
+                    onProgressStart: M.handleProgressStart,
+                    didDrag: M.didDrag,
+                    clearDidDrag: M.clearDidDrag
                   },
                   u.taskId
                 )) }),
-                /* @__PURE__ */ h("g", { className: "gantt-ghost-layer", children: /* @__PURE__ */ h(
+                /* @__PURE__ */ g("g", { className: "gantt-ghost-layer", children: /* @__PURE__ */ g(
                   "rect",
                   {
-                    ref: H,
+                    ref: _,
                     className: "gantt-bar-ghost",
                     rx: 4,
                     ry: 4,
                     style: { display: "none" }
                   }
                 ) }),
-                j && /* @__PURE__ */ h("g", { className: "gantt-today-layer", children: /* @__PURE__ */ h(
+                ut && /* @__PURE__ */ g("g", { className: "gantt-today-layer", children: /* @__PURE__ */ g(
                   "line",
                   {
                     className: "gantt-today-line",
-                    x1: b,
+                    x1: J,
                     y1: 0,
-                    x2: b,
-                    y2: d
+                    x2: J,
+                    y2: T
                   }
                 ) })
               ]
@@ -883,26 +993,26 @@ function at(t) {
     parseInt(e.slice(4, 6), 16)
   ];
 }
-function z(t) {
+function Z(t) {
   return Math.max(0, Math.min(255, Math.round(t)));
 }
-function Wt(t, e = 40) {
-  const [n, a, s] = at(t);
-  return `#${z(n - e).toString(16).padStart(2, "0")}${z(a - e).toString(16).padStart(2, "0")}${z(s - e).toString(16).padStart(2, "0")}`;
+function ee(t, e = 40) {
+  const [n, s, r] = at(t);
+  return `#${Z(n - e).toString(16).padStart(2, "0")}${Z(s - e).toString(16).padStart(2, "0")}${Z(r - e).toString(16).padStart(2, "0")}`;
 }
-function jt(t, e = 40) {
-  const [n, a, s] = at(t);
-  return `#${z(n + e).toString(16).padStart(2, "0")}${z(a + e).toString(16).padStart(2, "0")}${z(s + e).toString(16).padStart(2, "0")}`;
+function ne(t, e = 40) {
+  const [n, s, r] = at(t);
+  return `#${Z(n + e).toString(16).padStart(2, "0")}${Z(s + e).toString(16).padStart(2, "0")}${Z(r + e).toString(16).padStart(2, "0")}`;
 }
-function Ft(t, e) {
-  const [n, a, s] = at(t);
-  return `rgba(${n}, ${a}, ${s}, ${e})`;
+function re(t, e) {
+  const [n, s, r] = at(t);
+  return `rgba(${n}, ${s}, ${r}, ${e})`;
 }
 export {
-  Gt as GanttChart,
-  Pt as computeArrowPath,
-  Wt as darkenHex,
-  Ft as hexToRgba,
-  jt as lightenHex,
-  wt as useGanttTree
+  te as GanttChart,
+  Wt as computeArrowPath,
+  ee as darkenHex,
+  re as hexToRgba,
+  ne as lightenHex,
+  vt as useGanttTree
 };
