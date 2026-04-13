@@ -27,11 +27,12 @@ const d = (offset: number): Date => {
 
 const initialTasks: GanttTask[] = [
   // Structural
-  { id: 's1', name: 'Cimentación', start: d(-10), end: d(5), progress: 80, groupId: 'structural', sortOrder: 1 },
-  { id: 's2', name: 'Columnas planta baja', start: d(5), end: d(20), progress: 30, groupId: 'structural', sortOrder: 2 },
+  { id: 's1', name: 'Cimentación', start: d(-10), end: d(5), progress: 80, groupId: 'structural', sortOrder: 1, critical: true },
+  { id: 's2', name: 'Columnas planta baja', start: d(5), end: d(20), progress: 30, groupId: 'structural', sortOrder: 2, critical: true },
   { id: 's2a', name: 'Armado', start: d(5), end: d(12), progress: 50, groupId: 'structural', parentId: 's2', sortOrder: 1 },
   { id: 's2b', name: 'Colado', start: d(12), end: d(20), progress: 0, groupId: 'structural', parentId: 's2', sortOrder: 2 },
-  { id: 's3', name: 'Losa nivel 1', start: d(20), end: d(35), progress: 0, groupId: 'structural', sortOrder: 3 },
+  { id: 's3', name: 'Losa nivel 1', start: d(20), end: d(35), progress: 0, groupId: 'structural', sortOrder: 3, critical: true },
+  { id: 'm1', name: 'Revisión estructural', start: d(35), end: d(35), progress: 0, groupId: 'structural', sortOrder: 4, critical: true },
 
   // Electrical
   { id: 'e1', name: 'Acometida eléctrica', start: d(0), end: d(10), progress: 60, groupId: 'electrical', sortOrder: 1 },
@@ -51,7 +52,8 @@ const initialDependencies: GanttDependency[] = [
   { fromTaskId: 's2', toTaskId: 's3', type: 'FS' },
   { fromTaskId: 'e1', toTaskId: 'e2', type: 'FS' },
   { fromTaskId: 's2', toTaskId: 'e2', type: 'FS' },
-  { fromTaskId: 's3', toTaskId: 'f1', type: 'FS' },
+  { fromTaskId: 's3', toTaskId: 'm1', type: 'FS' },
+  { fromTaskId: 'm1', toTaskId: 'f1', type: 'FS' },
   { fromTaskId: 'f1', toTaskId: 'f2', type: 'FS' },
   { fromTaskId: 'f1', toTaskId: 'f3', type: 'FS' },
 
@@ -166,6 +168,8 @@ function App() {
         "Piso cerámico" is disabled (dimmed, not draggable).
         <br />
         Four dependency types are wired: FS (default), SS (s1→e1), FF (s2b→e2), SF (f2→f3).
+        <br />
+        Structural tasks are marked critical (red stroke). "Revisión estructural" is a zero-duration milestone (diamond).
       </p>
 
       <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', marginBottom: 16, alignItems: 'center' }}>

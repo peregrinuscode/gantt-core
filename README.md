@@ -16,7 +16,9 @@ Lightweight, zero-dependency Gantt chart component for React.
 - **Locale-aware** — date formatting respects any locale (e.g. `es-MX`, `en-US`)
 - **Accessible** — ARIA attributes on interactive elements
 - **Groups & hierarchy** — collapsible groups and parent/child task trees
-- **Dependency arrows** — SVG paths between related tasks
+- **Typed dependency arrows** — FS / SS / FF / SF with correct edge routing
+- **Milestones** — zero-duration tasks render as diamonds automatically
+- **Critical tasks** — first-class `critical` flag with themable stroke
 
 ## Installation
 
@@ -30,7 +32,7 @@ npm install @peregrinus/gantt-core
 import { useState } from 'react';
 import { GanttChart } from '@peregrinus/gantt-core';
 import '@peregrinus/gantt-core/styles.css';
-import type { GanttTask, GanttGroup, TaskChangeEvent } from '@peregrinus/gantt-core';
+import type { GanttTask, GanttGroup, GanttDependency, TaskChangeEvent } from '@peregrinus/gantt-core';
 
 const groups: GanttGroup[] = [
   { id: 'dev', name: 'Development', color: '#4CAF50' },
@@ -39,8 +41,14 @@ const groups: GanttGroup[] = [
 
 const initialTasks: GanttTask[] = [
   { id: '1', name: 'Wireframes', start: new Date('2025-03-01'), end: new Date('2025-03-10'), progress: 100, groupId: 'design' },
-  { id: '2', name: 'UI implementation', start: new Date('2025-03-10'), end: new Date('2025-03-25'), progress: 40, groupId: 'dev', dependencies: ['1'] },
-  { id: '3', name: 'API integration', start: new Date('2025-03-20'), end: new Date('2025-04-05'), progress: 0, groupId: 'dev' },
+  { id: '2', name: 'UI implementation', start: new Date('2025-03-10'), end: new Date('2025-03-25'), progress: 40, groupId: 'dev' },
+  { id: '3', name: 'API integration', start: new Date('2025-03-20'), end: new Date('2025-04-05'), progress: 0, groupId: 'dev', critical: true },
+  { id: '4', name: 'Launch', start: new Date('2025-04-05'), end: new Date('2025-04-05'), progress: 0, groupId: 'dev' }, // zero-duration → milestone
+];
+
+const dependencies: GanttDependency[] = [
+  { fromTaskId: '1', toTaskId: '2', type: 'FS' },
+  { fromTaskId: '3', toTaskId: '4', type: 'FS' },
 ];
 
 function App() {
@@ -57,6 +65,7 @@ function App() {
   return (
     <GanttChart
       tasks={tasks}
+      dependencies={dependencies}
       groups={groups}
       viewMode="week"
       onTaskMove={handleTaskMove}
@@ -72,6 +81,7 @@ function App() {
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
 | `tasks` | `GanttTask[]` | *required* | Array of tasks to display |
+| `dependencies` | `GanttDependency[]` | `[]` | Edges between tasks — each rendered as a typed arrow |
 | `groups` | `GanttGroup[]` | `undefined` | Optional grouping categories |
 | `viewMode` | `'day' \| 'week' \| 'month'` | `'day'` | Time scale for the grid |
 | `taskListWidth` | `number` | `250` | Width of the left panel in px (0 to hide) |
@@ -95,15 +105,32 @@ function App() {
 | `id` | `string` | yes | Unique identifier |
 | `name` | `string` | yes | Display name |
 | `start` | `Date` | yes | Bar start date |
-| `end` | `Date` | yes | Bar end date (exclusive) |
+| `end` | `Date` | yes | Bar end date (exclusive). If equal to `start`, the task renders as a milestone diamond. |
 | `progress` | `number` | yes | Completion 0-100 |
 | `groupId` | `string` | no | Matches `GanttGroup.id` |
 | `parentId` | `string` | no | Parent task id for hierarchy |
-| `dependencies` | `string[]` | no | IDs of tasks this depends on |
 | `sortOrder` | `number` | no | Sort order within group/parent |
 | `disabled` | `boolean` | no | Disable drag/resize for this task |
 | `color` | `string` | no | Custom bar color (overrides group) |
+| `critical` | `boolean` | no | Mark as critical — renderer applies the critical stroke |
 | `meta` | `Record<string, unknown>` | no | Arbitrary metadata for callbacks |
+
+### `GanttDependency`
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `fromTaskId` | `string` | yes | Predecessor task id |
+| `toTaskId` | `string` | yes | Successor task id |
+| `type` | `'FS' \| 'SS' \| 'FF' \| 'SF'` | yes | Dependency type — determines arrow routing |
+
+Routing by type:
+
+| Type | Source edge | Target edge | Arrow direction |
+|------|-------------|-------------|-----------------|
+| FS (Finish-to-Start) | right | left | → |
+| SS (Start-to-Start) | left | left | → |
+| FF (Finish-to-Finish) | right | right | ← |
+| SF (Start-to-Finish) | left | right | ← |
 
 ### `GanttGroup`
 
@@ -166,6 +193,8 @@ Pass a `theme` prop or set CSS custom properties on a parent element:
 | `--gantt-font-size` | | Font size |
 | `--gantt-disabled-opacity` | `1` | Opacity for disabled (non-interactive) task bars |
 | `--gantt-summary-opacity` | `1` | Opacity for summary bars on collapsed groups |
+| `--gantt-bar-critical-stroke` | `#d32f2f` | Stroke applied to bars/milestones with `critical: true` |
+| `--gantt-bar-critical-stroke-width` | `2` | Stroke width for critical bars/milestones |
 
 ## Advanced Usage
 
@@ -206,8 +235,8 @@ hexToRgba('#4CAF50', 0.5);   // 'rgba(76, 175, 80, 0.5)'
 
 Planned for future releases:
 
-- Milestones (diamond markers)
-- Link mode (create dependencies by dragging between tasks)
+- Link mode (create dependencies by dragging between tasks) — emits `onDependencyCreate({fromTaskId, toTaskId, type})`
+- Per-task secondary-date markers (e.g. a distinct "deadline" marker separate from `end`)
 - Keyboard navigation (arrow keys, Enter to select)
 - Virtual scrolling for 500+ tasks
 - Minimap / overview scroll indicator

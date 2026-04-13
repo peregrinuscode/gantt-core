@@ -36,6 +36,7 @@ export interface GanttRow {
 /** A positioned task bar ready for SVG rendering */
 export interface GanttBar {
   taskId: string;
+  /** Left edge of the bounding box (for milestones, the bounding box is square-centered on the milestone date) */
   x: number;
   y: number;
   width: number;
@@ -44,6 +45,10 @@ export interface GanttBar {
   progress: number;
   /** Task name for display on the bar */
   name: string;
+  /** Renderer discriminator: regular bar vs. zero-duration milestone diamond */
+  kind: 'bar' | 'milestone';
+  /** True if the task is marked critical — renderer applies a distinct stroke */
+  critical?: boolean;
   /** True for group summary bars (collapsed groups) — not interactive */
   isSummary?: boolean;
 }
@@ -139,24 +144,44 @@ export function useGanttLayout(
           isCollapsed,
         });
 
-        // Calculate bar position
-        const x = dateToX(task.start, timeRange, columnWidth, viewMode);
-        const xEnd = dateToX(task.end, timeRange, columnWidth, viewMode);
-        const width = Math.max(xEnd - x, 2); // minimum 2px so it's visible
-
         const color =
           task.color ?? groupColorMap.get(groupId) ?? DEFAULT_COLOR;
 
-        bars.push({
-          taskId: task.id,
-          x,
-          y: y + (rowHeight - barHeight) / 2,
-          width,
-          height: barHeight,
-          color,
-          progress: task.progress,
-          name: task.name,
-        });
+        const isMilestone = task.start.getTime() === task.end.getTime();
+
+        if (isMilestone) {
+          // Square bounding box centered on the milestone date.
+          const centerX = dateToX(task.start, timeRange, columnWidth, viewMode);
+          bars.push({
+            taskId: task.id,
+            x: centerX - barHeight / 2,
+            y: y + (rowHeight - barHeight) / 2,
+            width: barHeight,
+            height: barHeight,
+            color,
+            progress: 0,
+            name: task.name,
+            kind: 'milestone',
+            critical: task.critical,
+          });
+        } else {
+          const x = dateToX(task.start, timeRange, columnWidth, viewMode);
+          const xEnd = dateToX(task.end, timeRange, columnWidth, viewMode);
+          const width = Math.max(xEnd - x, 2); // minimum 2px so it's visible
+
+          bars.push({
+            taskId: task.id,
+            x,
+            y: y + (rowHeight - barHeight) / 2,
+            width,
+            height: barHeight,
+            color,
+            progress: task.progress,
+            name: task.name,
+            kind: 'bar',
+            critical: task.critical,
+          });
+        }
 
         // Add children recursively (only if not collapsed)
         if (children && !isCollapsed) {
@@ -215,6 +240,7 @@ export function useGanttLayout(
             color: group.color,
             progress: 0,
             name: group.name,
+            kind: 'bar',
             isSummary: true,
           });
         }

@@ -278,21 +278,34 @@ export function useGanttDrag(options: UseGanttDragOptions): UseGanttDragResult {
       queueMicrotask(() => {
         if (mode === 'progress') {
           onProgressChange?.({ taskId, progress: ghostProgress });
-        } else {
-          const newStart = snapToGrid(
-            xToDate(ghostBar.x, timeRange, columnWidth, viewMode),
-            viewMode,
-          );
-          const newEnd = snapToGrid(
-            xToDate(ghostBar.x + ghostBar.width, timeRange, columnWidth, viewMode),
-            viewMode,
-          );
+          return;
+        }
 
-          if (mode === 'move') {
-            onTaskMove?.({ taskId, start: newStart, end: newEnd });
-          } else {
-            onTaskResize?.({ taskId, start: newStart, end: newEnd });
-          }
+        // Milestones must keep start === end. Derive a single date from the
+        // bounding box center so the diamond snaps cleanly to a calendar day.
+        if (result.originalBar.kind === 'milestone') {
+          const centerX = ghostBar.x + ghostBar.width / 2;
+          const snapped = snapToGrid(
+            xToDate(centerX, timeRange, columnWidth, viewMode),
+            viewMode,
+          );
+          onTaskMove?.({ taskId, start: snapped, end: snapped });
+          return;
+        }
+
+        const newStart = snapToGrid(
+          xToDate(ghostBar.x, timeRange, columnWidth, viewMode),
+          viewMode,
+        );
+        const newEnd = snapToGrid(
+          xToDate(ghostBar.x + ghostBar.width, timeRange, columnWidth, viewMode),
+          viewMode,
+        );
+
+        if (mode === 'move') {
+          onTaskMove?.({ taskId, start: newStart, end: newEnd });
+        } else {
+          onTaskResize?.({ taskId, start: newStart, end: newEnd });
         }
       });
     },

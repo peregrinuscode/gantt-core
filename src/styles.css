@@ -23,6 +23,8 @@
   --gantt-row-selected: rgba(25, 118, 210, 0.08);
   --gantt-disabled-opacity: 1;
   --gantt-summary-opacity: 1;
+  --gantt-bar-critical-stroke: #d32f2f;
+  --gantt-bar-critical-stroke-width: 2;
   --gantt-font: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --gantt-font-size: 13px;
 
@@ -228,6 +230,31 @@
 
 .gantt-arrow-head {
   fill: var(--gantt-arrow-color);
+}
+
+/* ---- Milestones ---- */
+
+.gantt-milestone {
+  stroke: none;
+}
+
+.gantt-milestone-label {
+  fill: var(--gantt-header-text);
+  font-family: var(--gantt-font);
+  font-size: 12px;
+  font-weight: 500;
+  pointer-events: none;
+  dominant-baseline: central;
+  text-anchor: start;
+}
+
+/* ---- Critical task treatment ---- */
+
+.gantt-bar-group--critical .gantt-bar-bg,
+.gantt-bar-group--critical .gantt-milestone {
+  stroke: var(--gantt-bar-critical-stroke);
+  stroke-width: var(--gantt-bar-critical-stroke-width);
+  paint-order: stroke;
 }
 
 /* ---- Summary bars (collapsed groups) ---- */

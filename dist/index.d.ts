@@ -85,6 +85,7 @@ export declare interface DragState {
 /** A positioned task bar ready for SVG rendering */
 export declare interface GanttBar {
     taskId: string;
+    /** Left edge of the bounding box (for milestones, the bounding box is square-centered on the milestone date) */
     x: number;
     y: number;
     width: number;
@@ -93,6 +94,10 @@ export declare interface GanttBar {
     progress: number;
     /** Task name for display on the bar */
     name: string;
+    /** Renderer discriminator: regular bar vs. zero-duration milestone diamond */
+    kind: 'bar' | 'milestone';
+    /** True if the task is marked critical — renderer applies a distinct stroke */
+    critical?: boolean;
     /** True for group summary bars (collapsed groups) — not interactive */
     isSummary?: boolean;
 }
@@ -265,14 +270,10 @@ export declare interface GanttTheme {
     '--gantt-summary-stroke'?: string;
     /** Stroke width for summary bars. Default: 0 */
     '--gantt-summary-stroke-width'?: string;
-    /** Stroke color applied to bars with `critical: true` */
+    /** Stroke color applied to bars/milestones with `critical: true` */
     '--gantt-bar-critical-stroke'?: string;
-    /** Stroke width for critical bars. Default: '2px' */
+    /** Stroke width for critical bars/milestones. Default: 2 */
     '--gantt-bar-critical-stroke-width'?: string;
-    /** Fill color for milestone diamonds. Default: inherits the task color */
-    '--gantt-milestone-fill'?: string;
-    /** Size (width/height) of milestone diamonds in px. Default: rowHeight × 0.6 */
-    '--gantt-milestone-size'?: string;
 }
 
 /** Convert a hex color to an rgba() string. */

@@ -128,14 +128,10 @@ export interface GanttTheme {
   '--gantt-summary-stroke'?: string;
   /** Stroke width for summary bars. Default: 0 */
   '--gantt-summary-stroke-width'?: string;
-  /** Stroke color applied to bars with `critical: true` */
+  /** Stroke color applied to bars/milestones with `critical: true` */
   '--gantt-bar-critical-stroke'?: string;
-  /** Stroke width for critical bars. Default: '2px' */
+  /** Stroke width for critical bars/milestones. Default: 2 */
   '--gantt-bar-critical-stroke-width'?: string;
-  /** Fill color for milestone diamonds. Default: inherits the task color */
-  '--gantt-milestone-fill'?: string;
-  /** Size (width/height) of milestone diamonds in px. Default: rowHeight × 0.6 */
-  '--gantt-milestone-size'?: string;
 }
 
 /** Main component props */

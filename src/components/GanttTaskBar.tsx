@@ -34,7 +34,6 @@ export function GanttTaskBar({
   clearDidDrag,
 }: GanttTaskBarProps) {
   const radius = 4;
-  const progressWidth = bar.width * (bar.progress / 100);
   const interactive = !readOnly && !disabled && !bar.isSummary;
 
   const handleClick = (e: React.MouseEvent) => {
@@ -56,9 +55,48 @@ export function GanttTaskBar({
     interactive && 'gantt-bar-group--interactive',
     disabled && 'gantt-bar-group--disabled',
     bar.isSummary && 'gantt-bar-group--summary',
+    bar.critical && 'gantt-bar-group--critical',
+    bar.kind === 'milestone' && 'gantt-bar-group--milestone',
   ]
     .filter(Boolean)
     .join(' ');
+
+  if (bar.kind === 'milestone') {
+    const cx = bar.x + bar.width / 2;
+    const cy = bar.y + bar.height / 2;
+    const points = [
+      `${cx},${bar.y}`,
+      `${bar.x + bar.width},${cy}`,
+      `${cx},${bar.y + bar.height}`,
+      `${bar.x},${cy}`,
+    ].join(' ');
+
+    return (
+      <g
+        className={className}
+        onClick={handleClick}
+        onDoubleClick={handleDoubleClick}
+      >
+        <polygon
+          className="gantt-milestone"
+          points={points}
+          fill={bar.color}
+          onPointerDown={
+            interactive ? (e) => onMoveStart?.(bar.taskId, e) : undefined
+          }
+        />
+        <text
+          className="gantt-milestone-label"
+          x={bar.x + bar.width + 6}
+          y={cy}
+        >
+          {bar.name}
+        </text>
+      </g>
+    );
+  }
+
+  const progressWidth = bar.width * (bar.progress / 100);
 
   return (
     <g
