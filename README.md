@@ -231,6 +231,49 @@ lightenHex('#4CAF50', 0.3);  // 30% lighter
 hexToRgba('#4CAF50', 0.5);   // 'rgba(76, 175, 80, 0.5)'
 ```
 
+## Breaking changes in 0.2.0
+
+The dependency API moved off of `GanttTask`. Per-task `dependencies?: string[]` is gone; dependencies are now a top-level prop on `<GanttChart>` with a typed shape:
+
+```ts
+type DependencyType = 'FS' | 'SS' | 'FF' | 'SF';
+
+interface GanttDependency {
+  fromTaskId: string;   // predecessor
+  toTaskId: string;     // successor
+  type: DependencyType;
+}
+```
+
+```tsx
+<GanttChart tasks={tasks} dependencies={dependencies} />
+```
+
+All four standard Gantt dependency types are routed correctly out of the box (FS leaves the source's right edge and arrives at the target's left edge; SS/FF route via a side column; SF routes around both bars).
+
+### Andamio migration recipe
+
+For consumers (e.g. Andamio's Planning Gantt) that previously passed `dependencies: string[]` per task, the migration is one file. In `Frontend/src/features/planning/GanttChart.tsx`:
+
+- **Line 139** — remove `dependencies: showDependencies ? (task.dependencies || []) : [],` from the per-task mapping.
+- **Near the `<GanttCore>` JSX** — build a flat array and pass it as a prop:
+
+  ```tsx
+  const ganttDependencies: GanttDependency[] = useMemo(() => {
+    if (!showDependencies) return [];
+    return tasks.flatMap(t =>
+      (t.dependencies || []).map(depId => ({
+        fromTaskId: depId,
+        toTaskId: t.id,
+        type: 'FS' as const,
+      }))
+    );
+  }, [tasks, showDependencies]);
+  ```
+
+  then `<GanttCore ... dependencies={ganttDependencies} />`.
+- **Line 52** (`getTaskColor` blocked detection) — no change. It reads Andamio's raw `task.dependencies`, not the gantt-core shape.
+
 ## Roadmap
 
 Planned for future releases:

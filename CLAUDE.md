@@ -74,12 +74,14 @@ npm run lint         # ESLint
 - [ ] Drag-to-move task bars (changes start+end, preserves duration)
 - [ ] Drag bar edges to resize (changes start OR end independently)
 - [ ] Drag progress handle
-- [ ] Dependency arrows (SVG paths from source task to dependent task)
+- [x] Typed dependency arrows (FS/SS/FF/SF, SVG paths from source task to dependent task)
 - [ ] Single-click and double-click events on tasks
 - [ ] Read-only mode (disables all drag interactions)
 - [ ] CSS custom property theming
 - [ ] Touch/pointer support (iPad, touchscreen)
 - [ ] Locale-aware date formatting
+- [x] Milestones (diamond markers, auto-detected when `start === end`)
+- [x] Critical task flag (visual-only, themable stroke)
 
 ### Not in V1
 - Resource/assignment views
@@ -89,12 +91,14 @@ npm run lint         # ESLint
 - Undo/redo
 - Inline editing of task names
 - Drag to create new tasks
-- Milestones (diamond markers)
 - Link mode UI (creating dependencies by dragging between tasks)
 
-### V1.1 Candidates (after Andamio integration)
-- Link mode for creating dependencies
-- Milestones
+### Cycle 2 Candidates (after Andamio V2-S5 wiring)
+- Link mode for creating dependencies (drag between bars)
+- Per-task critical-deadline markers
+- Status-based styling
+- Priority indicators
+- Summary bar styling (parent vs. regular bar) — parent bars currently render identically to regular bars; traditional Gantt convention renders summary bars differently (thinner, with end-caps)
 - Keyboard navigation (arrow keys to move between tasks, Enter to select)
 - Virtual scrolling for 200+ tasks
 - Minimap / overview scroll indicator
