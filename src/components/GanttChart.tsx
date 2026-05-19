@@ -150,6 +150,7 @@ export function GanttChart(props: GanttChartProps) {
               rowHeight={rowHeight}
               totalHeight={totalHeight}
               onToggleCollapse={toggleCollapse}
+              onTaskClick={onTaskClick}
             />
 
             {/* SVG timeline */}

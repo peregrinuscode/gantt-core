@@ -6,6 +6,7 @@ interface GanttTaskListProps {
   rowHeight: number;
   totalHeight: number;
   onToggleCollapse: (id: string) => void;
+  onTaskClick?: (taskId: string) => void;
 }
 
 const INDENT_PX = 16;
@@ -31,6 +32,7 @@ export function GanttTaskList({
   rowHeight,
   totalHeight,
   onToggleCollapse,
+  onTaskClick,
 }: GanttTaskListProps) {
   if (width <= 0) return null;
 
@@ -47,16 +49,28 @@ export function GanttTaskList({
           : row.taskId!;
 
         const indent = row.level * INDENT_PX;
+        const isTask = row.type === 'task';
+        const clickable = row.hasChildren || (isTask && !!onTaskClick);
+
+        const handleRowClick = clickable
+          ? () => {
+              if (isTask && onTaskClick) {
+                onTaskClick(rawId);
+              } else if (row.hasChildren) {
+                onToggleCollapse(rawId);
+              }
+            }
+          : undefined;
 
         return (
           <div
             key={row.id}
             className={`gantt-task-list-row ${row.type === 'group' ? 'gantt-task-list-row--group' : ''}`}
-            style={{ height: rowHeight, cursor: row.hasChildren ? 'pointer' : undefined }}
-            role={row.hasChildren ? 'button' : 'listitem'}
+            style={{ height: rowHeight, cursor: clickable ? 'pointer' : undefined }}
+            role={clickable ? 'button' : 'listitem'}
             aria-expanded={row.hasChildren ? !row.isCollapsed : undefined}
             aria-label={row.hasChildren ? (row.isCollapsed ? `Expand ${row.name}` : `Collapse ${row.name}`) : undefined}
-            onClick={row.hasChildren ? () => onToggleCollapse(rawId) : undefined}
+            onClick={handleRowClick}
           >
             {/* Colored accent bar for group rows */}
             {row.type === 'group' && row.color && (
@@ -71,7 +85,12 @@ export function GanttTaskList({
 
             {/* Toggle button or spacer */}
             {row.hasChildren ? (
-              <span className="gantt-task-list-toggle">
+              <span
+                className="gantt-task-list-toggle"
+                role={isTask ? 'button' : undefined}
+                aria-label={isTask ? (row.isCollapsed ? `Expand ${row.name}` : `Collapse ${row.name}`) : undefined}
+                onClick={isTask ? (e) => { e.stopPropagation(); onToggleCollapse(rawId); } : undefined}
+              >
                 <Chevron expanded={!row.isCollapsed} />
               </span>
             ) : (
