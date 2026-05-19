@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import type { GanttTask, GanttGroup, ViewMode } from '../types';
+import type { GanttTask, GanttGroup, ViewMode, GanttBarIndicator } from '../types';
 import {
   calculateTimeRange,
   dateToX,
@@ -47,8 +47,13 @@ export interface GanttBar {
   name: string;
   /** Renderer discriminator: regular bar vs. zero-duration milestone diamond */
   kind: 'bar' | 'milestone';
-  /** True if the task is marked critical — renderer applies a distinct stroke */
+  /** True if the task is marked critical — renderer applies a distinct stroke.
+   *  Set when `severity === 'critical'` or legacy `critical: true`. */
   critical?: boolean;
+  /** Severity level controlling outline style (forwarded from task) */
+  severity?: 'critical' | 'warning';
+  /** Per-bar badge overlays (forwarded from task) */
+  indicators?: GanttBarIndicator[];
   /** True for group summary bars (collapsed groups) — not interactive */
   isSummary?: boolean;
 }
@@ -149,6 +154,11 @@ export function useGanttLayout(
 
         const isMilestone = task.start.getTime() === task.end.getTime();
 
+        // Normalize severity: explicit severity wins, else legacy `critical: true` => 'critical'.
+        const severity: 'critical' | 'warning' | undefined =
+          task.severity ?? (task.critical ? 'critical' : undefined);
+        const criticalFlag = severity === 'critical';
+
         if (isMilestone) {
           // Square bounding box centered on the milestone date.
           const centerX = dateToX(task.start, timeRange, columnWidth, viewMode);
@@ -162,7 +172,9 @@ export function useGanttLayout(
             progress: 0,
             name: task.name,
             kind: 'milestone',
-            critical: task.critical,
+            critical: criticalFlag,
+            severity,
+            indicators: task.indicators,
           });
         } else {
           const x = dateToX(task.start, timeRange, columnWidth, viewMode);
@@ -179,7 +191,9 @@ export function useGanttLayout(
             progress: task.progress,
             name: task.name,
             kind: 'bar',
-            critical: task.critical,
+            critical: criticalFlag,
+            severity,
+            indicators: task.indicators,
           });
         }
 

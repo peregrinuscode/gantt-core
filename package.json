@@ -1,6 +1,6 @@
 {
   "name": "@peregrinus/gantt-core",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Lightweight, zero-dependency Gantt chart component for React",
   "license": "MIT",
   "repository": {

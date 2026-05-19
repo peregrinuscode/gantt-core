@@ -50,10 +50,30 @@ export interface GanttTask {
   disabled?: boolean;
   /** Custom color for this task bar (overrides group color) */
   color?: string;
-  /** Mark the task as critical — renderer applies a distinct stroke treatment */
+  /** Mark the task as critical — renderer applies a distinct stroke treatment.
+   *  @deprecated Use `severity: 'critical'` instead. `critical: true` is kept for
+   *  backward compatibility and treated as `severity: 'critical'`. */
   critical?: boolean;
+  /** Severity level — renderer applies a distinct stroke per level.
+   *  - `critical`: uses `--gantt-bar-critical-stroke` (red by default)
+   *  - `warning`:  uses `--gantt-bar-warning-stroke` (orange by default) */
+  severity?: 'critical' | 'warning';
+  /** Per-bar badge overlays rendered on top of the bar (e.g., alert dot). */
+  indicators?: GanttBarIndicator[];
   /** Arbitrary metadata passed through to event callbacks */
   meta?: Record<string, unknown>;
+}
+
+/** A small visual badge rendered on a task bar (e.g., overdue dot). */
+export interface GanttBarIndicator {
+  /** Which corner of the bar to anchor the indicator to */
+  position: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left';
+  /** Any CSS color string */
+  color: string;
+  /** Visual shape — only `dot` is supported today, extensible later */
+  shape?: 'dot';
+  /** Optional accessible label (rendered as <title>) */
+  label?: string;
 }
 
 /** A collapsible group of tasks (rendered as a header row in the task list) */
@@ -128,10 +148,14 @@ export interface GanttTheme {
   '--gantt-summary-stroke'?: string;
   /** Stroke width for summary bars. Default: 0 */
   '--gantt-summary-stroke-width'?: string;
-  /** Stroke color applied to bars/milestones with `critical: true` */
+  /** Stroke color applied to bars/milestones with `severity: 'critical'` (or legacy `critical: true`) */
   '--gantt-bar-critical-stroke'?: string;
   /** Stroke width for critical bars/milestones. Default: 2 */
   '--gantt-bar-critical-stroke-width'?: string;
+  /** Stroke color applied to bars/milestones with `severity: 'warning'` */
+  '--gantt-bar-warning-stroke'?: string;
+  /** Stroke width for warning bars/milestones. Default: 2 */
+  '--gantt-bar-warning-stroke-width'?: string;
 }
 
 /** Main component props */

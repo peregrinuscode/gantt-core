@@ -1,5 +1,6 @@
 import React from 'react';
 import type { GanttBar } from '../hooks/useGanttLayout';
+import type { GanttBarIndicator } from '../types';
 
 interface GanttTaskBarProps {
   bar: GanttBar;
@@ -19,6 +20,25 @@ interface GanttTaskBarProps {
 const MIN_LABEL_WIDTH = 60;
 const HANDLE_WIDTH = 8;
 const PROGRESS_HANDLE_RADIUS = 5;
+const INDICATOR_DOT_RADIUS = 4;
+const INDICATOR_DOT_INSET = 6;
+
+function indicatorCenter(
+  bar: { x: number; y: number; width: number; height: number },
+  indicator: GanttBarIndicator,
+): { cx: number; cy: number } {
+  const left = bar.x + INDICATOR_DOT_INSET;
+  const right = bar.x + bar.width - INDICATOR_DOT_INSET;
+  const top = bar.y + INDICATOR_DOT_INSET;
+  const bottom = bar.y + bar.height - INDICATOR_DOT_INSET;
+  switch (indicator.position) {
+    case 'top-left':     return { cx: left,  cy: top };
+    case 'bottom-right': return { cx: right, cy: bottom };
+    case 'bottom-left':  return { cx: left,  cy: bottom };
+    case 'top-right':
+    default:             return { cx: right, cy: top };
+  }
+}
 
 export function GanttTaskBar({
   bar,
@@ -50,16 +70,25 @@ export function GanttTaskBar({
     onDoubleClick?.(bar.taskId);
   };
 
+  const severityClass =
+    bar.severity === 'warning'
+      ? 'gantt-bar-group--warning'
+      : bar.severity === 'critical' || bar.critical
+        ? 'gantt-bar-group--critical'
+        : null;
+
   const className = [
     'gantt-bar-group',
     interactive && 'gantt-bar-group--interactive',
     disabled && 'gantt-bar-group--disabled',
     bar.isSummary && 'gantt-bar-group--summary',
-    bar.critical && 'gantt-bar-group--critical',
+    severityClass,
     bar.kind === 'milestone' && 'gantt-bar-group--milestone',
   ]
     .filter(Boolean)
     .join(' ');
+
+  const indicators = bar.indicators ?? [];
 
   if (bar.kind === 'milestone') {
     const cx = bar.x + bar.width / 2;
@@ -92,6 +121,21 @@ export function GanttTaskBar({
         >
           {bar.name}
         </text>
+        {indicators.map((ind, i) => {
+          const { cx: ix, cy: iy } = indicatorCenter(bar, ind);
+          return (
+            <circle
+              key={`ind-${i}`}
+              className="gantt-bar-indicator"
+              cx={ix}
+              cy={iy}
+              r={INDICATOR_DOT_RADIUS}
+              fill={ind.color}
+            >
+              {ind.label && <title>{ind.label}</title>}
+            </circle>
+          );
+        })}
       </g>
     );
   }
@@ -197,6 +241,23 @@ export function GanttTaskBar({
           />
         </>
       )}
+
+      {/* Per-bar indicator badges (e.g., overdue dot) — rendered last so they sit on top */}
+      {indicators.map((ind, i) => {
+        const { cx: ix, cy: iy } = indicatorCenter(bar, ind);
+        return (
+          <circle
+            key={`ind-${i}`}
+            className="gantt-bar-indicator"
+            cx={ix}
+            cy={iy}
+            r={INDICATOR_DOT_RADIUS}
+            fill={ind.color}
+          >
+            {ind.label && <title>{ind.label}</title>}
+          </circle>
+        );
+      })}
     </g>
   );
 }

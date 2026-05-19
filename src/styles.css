@@ -25,6 +25,8 @@
   --gantt-summary-opacity: 1;
   --gantt-bar-critical-stroke: #d32f2f;
   --gantt-bar-critical-stroke-width: 2;
+  --gantt-bar-warning-stroke: #ed6c02;
+  --gantt-bar-warning-stroke-width: 2;
   --gantt-font: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --gantt-font-size: 13px;
 
@@ -248,13 +250,28 @@
   text-anchor: start;
 }
 
-/* ---- Critical task treatment ---- */
+/* ---- Severity outlines (critical = overdue, warning = downstream-affected) ---- */
 
 .gantt-bar-group--critical .gantt-bar-bg,
 .gantt-bar-group--critical .gantt-milestone {
   stroke: var(--gantt-bar-critical-stroke);
   stroke-width: var(--gantt-bar-critical-stroke-width);
   paint-order: stroke;
+}
+
+.gantt-bar-group--warning .gantt-bar-bg,
+.gantt-bar-group--warning .gantt-milestone {
+  stroke: var(--gantt-bar-warning-stroke);
+  stroke-width: var(--gantt-bar-warning-stroke-width);
+  paint-order: stroke;
+}
+
+/* ---- Per-bar indicator badges ---- */
+
+.gantt-bar-indicator {
+  pointer-events: none;
+  stroke: rgba(255, 255, 255, 0.85);
+  stroke-width: 1;
 }
 
 /* ---- Summary bars (collapsed groups) ---- */
