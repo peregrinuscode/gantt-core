@@ -58,7 +58,7 @@ function Lt(t, e, r, a) {
       s.push({
         index: d,
         date: new Date(l),
-        label: Mt(l, a),
+        label: vt(l, a),
         x: d * e,
         isWeekend: !1
       }), l = ot(l, 1), d++;
@@ -100,10 +100,10 @@ function Nt(t, e) {
 function St(t, e) {
   return t.toLocaleDateString(e, { month: "short", day: "numeric" });
 }
-function Mt(t, e) {
+function vt(t, e) {
   return t.toLocaleDateString(e, { month: "short", year: "numeric" });
 }
-const vt = "#3f51b5", Ct = 0.7;
+const Mt = "#3f51b5", Ct = 0.7;
 function At(t, e, r, a, s, o, n) {
   return rt(() => {
     const i = It(t, r), l = Lt(i, s, r, n), d = /* @__PURE__ */ new Map();
@@ -115,19 +115,19 @@ function At(t, e, r, a, s, o, n) {
         const D = $.get(c.parentId) ?? [];
         D.push(c), $.set(c.parentId, D);
       }
-    const v = [...e].sort(
+    const M = [...e].sort(
       (c, D) => (c.sortOrder ?? 0) - (D.sortOrder ?? 0)
     ), N = [], w = [], S = a * Ct;
     function O(c, D, P) {
       const C = [...c].sort(
-        (f, M) => (f.sortOrder ?? 0) - (M.sortOrder ?? 0)
+        (f, v) => (f.sortOrder ?? 0) - (v.sortOrder ?? 0)
       );
       for (const f of C) {
-        const M = N.length * a, E = $.get(f.id), R = !!E && E.length > 0, p = o.has(f.id);
+        const v = N.length * a, E = $.get(f.id), R = !!E && E.length > 0, p = o.has(f.id);
         N.push({
           type: "task",
           id: `task-${f.id}`,
-          y: M,
+          y: v,
           height: a,
           groupId: D,
           taskId: f.id,
@@ -137,13 +137,13 @@ function At(t, e, r, a, s, o, n) {
           hasChildren: R,
           isCollapsed: p
         });
-        const m = f.color ?? d.get(D) ?? vt, x = f.start.getTime() === f.end.getTime(), g = f.severity ?? (f.critical ? "critical" : void 0), I = g === "critical";
+        const m = f.color ?? d.get(D) ?? Mt, x = f.start.getTime() === f.end.getTime(), g = f.severity ?? (f.critical ? "critical" : void 0), I = g === "critical";
         if (x) {
           const A = q(f.start, i, s, r);
           w.push({
             taskId: f.id,
             x: A - S / 2,
-            y: M + (a - S) / 2,
+            y: v + (a - S) / 2,
             width: S,
             height: S,
             color: m,
@@ -159,7 +159,7 @@ function At(t, e, r, a, s, o, n) {
           w.push({
             taskId: f.id,
             x: A,
-            y: M + (a - S) / 2,
+            y: v + (a - S) / 2,
             width: L,
             height: S,
             color: m,
@@ -174,10 +174,10 @@ function At(t, e, r, a, s, o, n) {
         E && !p && O(E, D, P + 1);
       }
     }
-    if (v.length > 0)
-      for (const c of v) {
+    if (M.length > 0)
+      for (const c of M) {
         const D = t.filter(
-          (M) => M.groupId === c.id && !M.parentId
+          (v) => v.groupId === c.id && !v.parentId
         ), P = D.length > 0, C = o.has(c.id), f = N.length * a;
         if (N.push({
           type: "group",
@@ -193,9 +193,9 @@ function At(t, e, r, a, s, o, n) {
         }), !C)
           O(D, c.id, 1);
         else if (P) {
-          const M = t.filter((g) => g.groupId === c.id);
-          let E = M[0].start, R = M[0].end;
-          for (const g of M)
+          const v = t.filter((g) => g.groupId === c.id);
+          let E = v[0].start, R = v[0].end;
+          for (const g of v)
             g.start < E && (E = g.start), g.end > R && (R = g.end);
           const p = q(E, i, s, r), m = q(R, i, s, r), x = Math.max(m - p, 2);
           w.push({
@@ -208,7 +208,10 @@ function At(t, e, r, a, s, o, n) {
             progress: 0,
             name: c.name,
             kind: "bar",
-            isSummary: !0
+            isSummary: !0,
+            critical: c.severity === "critical",
+            severity: c.severity,
+            indicators: c.indicators
           });
         }
       }
@@ -254,7 +257,7 @@ function Ot(t) {
     onTaskMove: d,
     onTaskResize: y,
     onProgressChange: $
-  } = t, [v, N] = at(!1), w = Z(null), S = Z(null), O = Z(!1), G = B(
+  } = t, [M, N] = at(!1), w = Z(null), S = Z(null), O = Z(!1), G = B(
     (p) => a.find((m) => m.taskId === p),
     [a]
   ), j = B(
@@ -381,7 +384,7 @@ function Ot(t) {
   ), f = B(
     (p, m) => c(p, "resize-left", m),
     [c]
-  ), M = B(
+  ), v = B(
     (p, m) => c(p, "resize-right", m),
     [c]
   ), E = B(
@@ -391,12 +394,12 @@ function Ot(t) {
     O.current = !1;
   }, []);
   return {
-    isDragging: v,
+    isDragging: M,
     didDrag: O.current,
     clearDidDrag: R,
     handleMoveStart: C,
     handleResizeLeftStart: f,
-    handleResizeRightStart: M,
+    handleResizeRightStart: v,
     handleProgressStart: E,
     handlePointerMove: D,
     handlePointerUp: P
@@ -466,7 +469,7 @@ function Ft({
   didDrag: d,
   clearDidDrag: y
 }) {
-  const v = !e && !r && !t.isSummary, N = (c) => {
+  const M = !e && !r && !t.isSummary, N = (c) => {
     if (d) {
       y == null || y(), c.stopPropagation();
       return;
@@ -476,7 +479,7 @@ function Ft({
     d || s == null || s(t.taskId);
   }, S = t.severity === "warning" ? "gantt-bar-group--warning" : t.severity === "critical" || t.critical ? "gantt-bar-group--critical" : null, O = [
     "gantt-bar-group",
-    v && "gantt-bar-group--interactive",
+    M && "gantt-bar-group--interactive",
     r && "gantt-bar-group--disabled",
     t.isSummary && "gantt-bar-group--summary",
     S,
@@ -502,7 +505,7 @@ function Ft({
               className: "gantt-milestone",
               points: P,
               fill: t.color,
-              onPointerDown: v ? (C) => o == null ? void 0 : o(t.taskId, C) : void 0
+              onPointerDown: M ? (C) => o == null ? void 0 : o(t.taskId, C) : void 0
             }
           ),
           /* @__PURE__ */ h(
@@ -515,12 +518,12 @@ function Ft({
             }
           ),
           G.map((C, f) => {
-            const { cx: M, cy: E } = dt(t, C);
+            const { cx: v, cy: E } = dt(t, C);
             return /* @__PURE__ */ h(
               "circle",
               {
                 className: "gantt-bar-indicator",
-                cx: M,
+                cx: v,
                 cy: E,
                 r: lt,
                 fill: C.color,
@@ -552,7 +555,7 @@ function Ft({
             rx: 4,
             ry: 4,
             fill: t.color,
-            onPointerDown: v ? (c) => o == null ? void 0 : o(t.taskId, c) : void 0
+            onPointerDown: M ? (c) => o == null ? void 0 : o(t.taskId, c) : void 0
           }
         ),
         t.progress > 0 && /* @__PURE__ */ h(
@@ -579,7 +582,7 @@ function Ft({
             children: t.name
           }
         ),
-        v && /* @__PURE__ */ b(kt, { children: [
+        M && /* @__PURE__ */ b(kt, { children: [
           /* @__PURE__ */ h(
             "rect",
             {
@@ -699,8 +702,8 @@ function Gt({
                   className: "gantt-task-list-toggle",
                   role: d ? "button" : void 0,
                   "aria-label": d ? n.isCollapsed ? `Expand ${n.name}` : `Collapse ${n.name}` : void 0,
-                  onClick: d ? (v) => {
-                    v.stopPropagation(), s(i);
+                  onClick: d ? (M) => {
+                    M.stopPropagation(), s(i);
                   } : void 0,
                   children: /* @__PURE__ */ h(bt, { expanded: !n.isCollapsed })
                 }
@@ -841,11 +844,11 @@ function Vt(t, e, r, a, s, o, n) {
   ].join(" "), arrowHead: n };
 }
 function ft(t, e, r, a, s, o, n, i, l) {
-  const d = s - e, y = Math.min(i, Math.max(Math.abs(d) / 2, 1), H / 2), $ = d >= 0 ? 1 : -1, v = r === "left" ? -1 : 1, N = o === "left" ? 1 : -1;
+  const d = s - e, y = Math.min(i, Math.max(Math.abs(d) / 2, 1), H / 2), $ = d >= 0 ? 1 : -1, M = r === "left" ? -1 : 1, N = o === "left" ? 1 : -1;
   return { path: [
     `M ${t},${e}`,
     // Horizontal from start toward the column (stop short to leave room for curve)
-    `L ${n - v * y},${e}`,
+    `L ${n - M * y},${e}`,
     // Curve into vertical
     `Q ${n},${e} ${n},${e + y * $}`,
     // Vertical segment to target row
@@ -857,11 +860,11 @@ function ft(t, e, r, a, s, o, n, i, l) {
   ].join(" "), arrowHead: l };
 }
 function pt(t, e, r, a, s, o, n, i, l, d, y) {
-  const $ = Math.min(d, H / 2), v = r === "left" ? -1 : 1, N = o === "left" ? 1 : -1, w = i > n ? 1 : -1;
+  const $ = Math.min(d, H / 2), M = r === "left" ? -1 : 1, N = o === "left" ? 1 : -1, w = i > n ? 1 : -1;
   return { path: [
     `M ${t},${e}`,
     // Horizontal from source anchor to startColX
-    `L ${n - v * $},${e}`,
+    `L ${n - M * $},${e}`,
     // Curve into vertical (going down toward detour)
     `Q ${n},${e} ${n},${e + $}`,
     // Vertical down to detour row
@@ -932,21 +935,21 @@ function se(t) {
     showDependencies: d = !0,
     showTodayMarker: y = !0,
     theme: $,
-    locale: v,
+    locale: M,
     initialCollapsed: N,
     onTaskClick: w,
     onTaskDoubleClick: S,
     onTaskMove: O,
     onTaskResize: G,
     onProgressChange: j
-  } = t, c = i ?? Kt[s], { collapsedIds: D, toggleCollapse: P } = Pt(N), { containerRef: C, scrollLeft: f, handleScroll: M } = Et(), E = At(
+  } = t, c = i ?? Kt[s], { collapsedIds: D, toggleCollapse: P } = Pt(N), { containerRef: C, scrollLeft: f, handleScroll: v } = Et(), E = At(
     e,
     a,
     s,
     n,
     c,
     D,
-    v
+    M
   ), { rows: R, bars: p, columns: m, timeRange: x, totalWidth: g, totalHeight: I } = E, A = I + n * te, F = (u) => {
     if (u.startsWith("group-summary-")) {
       const xt = u.replace("group-summary-", "");
@@ -990,7 +993,7 @@ function se(t) {
       {
         ref: C,
         className: "gantt-timeline-container",
-        onScroll: M,
+        onScroll: v,
         children: /* @__PURE__ */ b("div", { className: "gantt-body-inner", style: { width: o + g }, children: [
           /* @__PURE__ */ h(
             Gt,

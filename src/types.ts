@@ -86,6 +86,10 @@ export interface GanttGroup {
   color: string;
   /** Sort order among groups */
   sortOrder?: number;
+  /** Severity applied to the collapsed-group summary bar (same semantics as on a task) */
+  severity?: 'critical' | 'warning';
+  /** Per-bar badge overlays rendered on top of the collapsed-group summary bar */
+  indicators?: GanttBarIndicator[];
 }
 
 /** Drag/resize result passed to event callbacks */

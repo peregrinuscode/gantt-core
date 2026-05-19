@@ -286,6 +286,20 @@
   stroke-width: var(--gantt-summary-stroke-width, 0);
 }
 
+/* Severity outlines must win over the summary's default no-stroke. Chain the
+   class selectors to raise specificity above the summary rule above. */
+.gantt-bar-group--summary.gantt-bar-group--critical .gantt-bar-bg {
+  stroke: var(--gantt-bar-critical-stroke);
+  stroke-width: var(--gantt-bar-critical-stroke-width);
+  paint-order: stroke;
+}
+
+.gantt-bar-group--summary.gantt-bar-group--warning .gantt-bar-bg {
+  stroke: var(--gantt-bar-warning-stroke);
+  stroke-width: var(--gantt-bar-warning-stroke-width);
+  paint-order: stroke;
+}
+
 /* ---- Drag interactions ---- */
 
 /* Interactive bars get grab cursor */

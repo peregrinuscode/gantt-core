@@ -256,6 +256,9 @@ export function useGanttLayout(
             name: group.name,
             kind: 'bar',
             isSummary: true,
+            critical: group.severity === 'critical',
+            severity: group.severity,
+            indicators: group.indicators,
           });
         }
       }
